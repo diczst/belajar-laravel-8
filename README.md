@@ -12,7 +12,6 @@ Kode diatas adalah contoh dari sebuah route untuk halaman utama saat user memasu
 
 Maka sistem akan menampilkan file bernama welcome yang terletak di `resources\views\welcome.blade.php`
 
-<br/>
 
 ## Membuat route baru tanpa file view
 Kita juga bisa membuat route baru yang menampilkan teks saja, tidak menampilkan file apapun
@@ -22,8 +21,6 @@ Route::get('/hello', function () {
     return "Hello World";
 });
 ``` 
-
-<br/>
 
 ## Membuat route baru dengan file view baru
 
@@ -46,7 +43,6 @@ Route::get('/about', function () {
     return view('about');
 });
 ```
-<br/>
 
 ## Mengirimkan data dari route ke view
 pertama-tama kita buat terlebih dahulu file barunya di folder `resources\views\` dalam contoh ini file view baru yang dibuat adalah `favoritequote.blade.php`. Selanjutnya kita tambahkan kode sederhana html pada file view `favoritequote.blade.php` : 
