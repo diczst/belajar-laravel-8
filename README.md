@@ -7,4 +7,3 @@ Branch ini berfokus pada cara menerapkan template populer sbadmin2 pada aplikasi
 
 ## Link SB-Admin 2
 https://startbootstrap.com/theme/sb-admin-2
-
