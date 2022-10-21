@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BookController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -34,4 +35,7 @@ Route::get('/favoritequote', function () {
         "by" => "Steve Jobs"
     ]);
 });
+
+// Membuat route menggunakan controller
+Route::get('/book', [BookController::class, 'index']);
 
