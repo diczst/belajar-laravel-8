@@ -39,3 +39,7 @@ Route::get('/favoritequote', function () {
 // Membuat route menggunakan controller
 Route::get('/book', [BookController::class, 'index']);
 
+Route::get('/favoritebook/{namabuku}', [BookController::class, 'favoritebook']);
+
+Route::get('/formbook', [BookController::class, 'formbook']);
+Route::post('/formbook/show', [BookController::class, 'showbook']);

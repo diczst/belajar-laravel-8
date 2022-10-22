@@ -1,148 +1,87 @@
-# Belajar Laravel Part 4 : Menampilkan View dan Data dari Controller
+# Belajar Laravel Part 5 : Request Data
 
-Pada materi sebelumnya, kita telah membuat sebuah route baru yang menggunakan method `index()` yang berada pada class `BookController`. Method ini mengembalikan sebuah data string yang akan tampil apabila kita mengetikkan `localhost:8000/book` pada browser. Pada materi ini, kita akan belajar menampilkan view serta mengirimkan data dari controller.
+## Input Request
+Seringkali sistem yang kita buat akan menerima inputan atau `request` dari user. `Request` biasanya dilakukan oleh pengguna untuk melakukan operasi data tertentu seperti `menambah data`, `menghapus data`, `mengubah data` dan `melihat data`. Secara garis besar ada dua jenis cara yang dapat dilakukan oleh user untuk mengirimkan request yaitu:
+1. Mengirimkan request melalui URL
+2. Mengirimkan request melalui input form
 
-## Menampilkan View dari Controller
+Kita dapat menampilkan atau menerima `request` tersebut untuk melakukan operasi tertentu, baik yang dikirim melalui URL, maupun dari input form.
 
-Untuk menampilkan view dari controller, pertama-tama kita harus membuat file viewnya terlebih dahulu. Kita buat file baru pada folder `resources\views`, yaitu `books.blade.php`. Selanjutnya silahkan tambahkan kode sebagai berikut : 
+### Menerima Request dari URL
+Agar user dapat mengirimkan `request` melalui URL, maka kita harus menyediakannya terlebih dahulu pada route kita. Pertama-tama kita buka file `BookController` selanjutnya kita tambahkan function baru bernama `favoriteBook()` dengan kode sebagai berikut : 
 ```
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>Data Buku</title>
-</head>
-<body>
-    
-    <h2>Kumpulan Buku Terbaik</h2>
-    <marquee>Membaca adalah jendela dunia</marquee>
-
-    <ol>
-        <li>Meditation - Marcus Aurelius</li>
-        <li>Machine Learning for Beginner - Chris Sebastian</li>
-        <li>Mindset - Carol Dweck</li>
-        <li>Ego is The Enemy - Ryan Holiday</li>
-        <li>Atomic Habit - James Clear</li>
-    </ol>
-    
-</body>
-</html>
-```
-Setelah membuat file view, kita ubah kode pada method `index()` yang berada pada class `BookController` dari
-```
- public function index(){
-    	return "Halo saya dari method index(), class BookController";
- }
-```
- menjadi
-```
-public function index(){
-    	return view('books');
- }
-``` 
-perlu diingat bahwasannya `books.blade.php` merupakan gabungan dari nama file dan ekstensi file :
-- `books` : nama file
-- `blade.php` : ekstensi file  
-
-Untuk menampilkan view, pada method `view()` cukup menuliskan nama filenya sebagai argumen. dalam contoh ini misalnya `'books'`. Sekarang, kita coba kembali mengakses `localhost:8000/book`, maka akan muncul tampilan dari file view `books.blade.php` yang sudah kita buat sebelumnya.
-![alt text](https://i.ibb.co/Qpz2SFk/Capture.jpg)
-
-## Menampilkan Data dari Controller
-Function `view()` merupakan function bawaan laravel yang berguna untuk menampilkan tampilan dari suatu file view yang sudah kita buat. Selain memasukkan nama file, kita juga bisa menyiapkan data untuk kita kirimkan ke view. Sekarang coba perhatikan `BookController` pada method `index()` yang sudah kita buat sebelumnya. 
-```
-public function index(){
-    	return view('books');
- }
-``` 
-Pada contoh kode diatas kita baru hanya menampilkan viewnya saja. Untuk mengirimkan data yang nantinya bisa ditampilkan pada view, maka kita bisa menambahkan satu argumen baru lagi sebagai berikut :
-```
-public function index(){
-    	return view('books',[
-            'namasaya' => 'Dicky Pratama'
-        ]);
+public function favoritebook($namaBuku){
+        return $namaBuku;
 }
 ```
-`'namasaya'` yang berada di sebelah kiri merupakan key untuk mengakses data, sedangkan `'Dicky Pratama'` merupakan datanya. Kita memanggil key dari dari suatu data untuk menampilkan datanya, dalam contoh ini untuk menampilkan data `'Dicky Pratama'` kita panggil keynya yaitu `'namasaya'`. Untuk memanggil key dari suatu data dalam suatu view dapat dilakukan dengan cara sebagai berikut :  
+Selanjutnya kita buka file `web.php` lalu kita tambahkan route baru sebagai berikut :
+```
+Route::get('/favoritebook/{namabuku}', [BookController::class, 'favoritebook']);
+```
+Sekarang coba akses route yang baru kita buat dengan cara membuka `localhost:8000/favoritebook/Mindset`. Jika sudah berhasil, maka akan muncul sebuah teks bertuliskan `Mindset` yang merupakan `request` yang kita kirimkan melalui URL. Jika ingin menambahkan spasi, kita bisa menggunakan `%20` seperti berikut : `localhost:8000/favoritebook/Mindset%20-%20Carol%20Dweck`, maka hasil yang akan ditampilkan adalah `Mindset - Carol Dweck`.
+
+### Menerima Request dari Input Form
+Selanjutnya kita akan mencoba menampilkan `request` yang dilakukan user melalui input form. Input form ini akan menggunakan method post. Cara kerja input form method post ini mirip dengan pengiriman `request` melalui URL. Namun, pada input form dengan method post, `request` yang dikirimkan oleh user tidak dikirim melalui URL, sehingga data `request` tidak akan terlihat di alamat URL untuk tujuan keamanan. Hal ini karena data-data sensitif seperti password akan sangat berbahaya apabila diinputkan melalui URL karena dapat terlihat secara langsung maupun secara tidak langsung (dari history browser).
+
+<br>
+
+Langkah pertama untuk menerima `request` dari input form, maka kita butuh halaman formnya terlebih dahulu. Kita buat file view baru `formbook.blade.php`, lalu kita masukkan source code sebagai berikut:
 ```
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Data Buku</title>
+    <title>Buku Favorit</title>
 </head>
 <body>
-
-    <h2>Kumpulan Buku Terbaik</h2>
-    <marquee>Membaca adalah jendela dunia</marquee>
-
-    <ol>
-        <li>Meditation - Marcus Aurelius</li>
-        <li>Machine Learning for Beginner - Chris Sebastian</li>
-        <li>Mindset - Carol Dwek</li>
-        <li>Ego is The Enemy - Ryan Holiday</li>
-        <li>Atomic Habit - James Clear</li>
-    </ol>
-
-    <h4>Situs web ini dibuat oleh : {{ $namasaya }}</h4>
-    
+	<h2>Buku Favorit</h2>
+    <form action="/formbook/show" method="post">
+		<input type = "hidden" name = "_token" value = "<?php echo csrf_token() ?>">
+      
+      	Nama Buku :
+		<input type="text" name="nama"> <br/>
+		Penulis :
+		<input type="text" name="penulis"> <br/>
+		<input type="submit" value="Simpan">
+	</form>
 </body>
 </html>
 ```
-Sekarang kita coba akses kembali `localhost:8000/book` maka akan tampil data yang sudah kita buat dicontroller
-![alt text](https://i.ibb.co/nnT0Rqy/Capture.jpg)
-
-## Menampilkan Data Array dari Controller
-Sebelumnya kita telah menggunakan sebuah key untuk menampilkan sebuah data pada view kita. Kita juga bisa menggunakan sebuah key untuk mengakses banyak data sekaligus. Biasanya data ini berbentuk array atau kumpulan data. Sekarang kita buka kembali file `BookController` kita lalu pada function `index()` kita tambahkan kode sebagai berikut :
+Kita akan menggunakan `BookController` agar lebih rapi, maka selanjutnya kita buka `BookController` lalu tambahkan function baru `formbook()` dan tambahkan kode sebagai berikut :
 ```
-public function index(){
-        $comics = [
-            "Naruto - Masashi Kishimoto",
-            "One Piece - Eichiro Oda",
-            "Dragon Ball Super - Akira Toriyama",
-            "Vinland Saga - Makoto Yukimura",
-            "Doraemon - Fujio F. Fujiko"
-        ];
-
-    	return view('books',[
-            'namasaya' => 'Dicky Pratama',
-            'comics' => $comics
-        ]);
+public function formbook(){
+    return view('formbook');
 }
 ```
-Tak seperti data `'Dicky Pratama'` yang bisa langsung kita akses dengan memanggil key `namasaya`, kita tidak bisa mengakses data array `comics` ini secara langsung, tetapi harus dipecah-pecah terlebih dahulu dengan perulangan sebagai berikut : 
-
+Jika sudah, maka kita buat route baru di `web.php` dan kita panggil function `formbook` yang berada pada `BookController` untuk menampilkan view `formbook` yang sudah kita buat.
 ```
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>Data Buku</title>
-</head>
-<body>
-    <h2>Kumpulan Buku Terbaik</h2>
-    <marquee>Membaca adalah jendela dunia</marquee>
-
-    <ol>
-        <li>Meditation - Marcus Aurelius</li>
-        <li>Machine Learning for Beginner - Chris Sebastian</li>
-        <li>Mindset - Carol Dwek</li>
-        <li>Ego is The Enemy - Ryan Holiday</li>
-        <li>Atomic Habit - James Clear</li>
-    </ol>
-
-    <h2>Kumpulan Buku Komik Terbaik</h2>
-    <ol>
-        @foreach ($comics as $comic)
-            <li>{{ $comic }}</li>
-        @endforeach
-    </ol>
-
-    <h4>Situs web ini dibuat oleh : {{ $namasaya }}</h4>
-    
-</body>
-</html>
+Route::get('/formbook', [BookController::class, 'formbook']);
 ```
+Selanjutnya kita buka `http://localhost:8000/formbook` maka akan tampil halaman seperti berikut :
+![alt text](https://i.ibb.co/yXyJW8S/Capture.jpg)
 
-`@foreach` menandakan bahwa kita akan melakukan perulangan sebanyak data yang ada di `$comics` karena terdapat lima data maka akan terjadi lima kali perulangan, sedangkan `$comic` akan mewakili tiap-tiap data yang ada pada array `$comics`. Sekarang kita coba akses kembali route `/book` kembali, buka `localhost:8000/book` pada browser, maka kumpulan data-data komik yang sudah kita buat pada controller akan tampil seperti berikut :
+Setelah kita membuat view dan input form untuk user, sekarang kita akan menampilkan request yang diinputkan oleh user. Pertama-tama kita buka kembali `BookController`, selanjutnya kita tambah function `showbook()` sebagai berikut :
+```
+public function showbook(Request $request){
+        $nama = $request->input('nama');
+     	$penulis = $request->input('penulis');
+        return $nama." - ".$penulis;
+}
+```
+Selanjutnya kita tambahkan route baru dengan memanggil function `showbook` yang sudah kita buat selanjutnya
+```
+Route::post('/formbook/show', [BookController::class, 'showbook']);
+```
+Kita buka kembali halaman form kita `http://localhost:8000/formbook`, selanjutnya kita coba masukkan data misalnya
+- Nama Buku : Bicara itu Ada Seninya
+- Penulis : Oh Su Hyang  
 
-![alt text](https://i.ibb.co/BCRq8JW/Capture.jpg)
+Selanjutnya kita tekan tombol submit, maka akan muncul nama buku dan penulis yang sebelumnya sudah kita inputkan yaitu
+`Bicara itu Ada Seninya - Oh Su Hyang`. Jika kita perhatikan, data request yang kita inputkan pada input form tidak muncul pada url. URL yang ditampilkan tidak berubah, tetap `http://localhost:8000/formbook` inilah salah satu tujuan dari metode request dengan input form menggunakan method post yaitu mengamankan dan menyembunyikan data.
+
+
+## Link
+https://laravel.com/docs/8.x/requests#main-content
+
 
 
 

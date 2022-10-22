@@ -20,4 +20,18 @@ class BookController extends Controller
             'comics' => $comics
         ]);
     }
+
+    public function favoritebook($namaBuku){
+        return $namaBuku;
+    }
+
+    public function formbook(){
+        return view('formbook');
+    }
+
+    public function showbook(Request $request){
+        $nama = $request->input('nama');
+     	$penulis = $request->input('penulis');
+        return $nama." - ".$penulis;
+    }
 }
