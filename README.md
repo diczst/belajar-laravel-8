@@ -1,66 +1,148 @@
-# Belajar Laravel Part 3 : Controller
+# Belajar Laravel Part 4 : Menampilkan View dan Data dari Controller
 
-## Pengertian MVC
-Laravel menerapkan design pattern `MVC` (Model, View Controller) hal ini berarti dalam membangun aplikasi yang kita buat, terdapat 3 jenis file utama yang terletak pada folder yang berbeda-beda, tentunya tiap jenis file ini memiliki kegunaan yang berbeda-beda pula. Tujuan menerapkan design pattern saat membuat aplikasi adalah agar kode-kode yang kita tuliskan menjadi lebih rapi dan terstruktur, sehingga kita dapat lebih mudah dalam mengembangkan aplikasi kita kedepannya. Menerapkan design pattern, selain bertujuan untuk manajemen kode yang baik, juga dapat meminimalisir error yang akan terjadi apabila kita melakukan perubahan atau penambahan fitur pada aplikasi yang sudah selesai kita buat.
+Pada materi sebelumnya, kita telah membuat sebuah route baru yang menggunakan method `index()` yang berada pada class `BookController`. Method ini mengembalikan sebuah data string yang akan tampil apabila kita mengetikkan `localhost:8000/book` pada browser. Pada materi ini, kita akan belajar menampilkan view serta mengirimkan data dari controller.
 
+## Menampilkan View dari Controller
 
-![alt text](https://www.dicoding.com/blog/wp-content/uploads/2021/09/Blog_Apa_Itu_MVC_Pahami_Konsepnya_dengan_Baik.jpg)
-
-
-## Pengertian Controller
-Pada bagian ini kita akan fokus membahas bagian `C` atau Controller. Sederhananya `Controller` merupakan jembatan penghubung antara  `View` dan `Model` sekaligus berperan sebagai pengolah data. Dalam Laravel, folder controller terletak pada `app\Http\Controllers\`. Ada beberapa cara untuk membuat controller di Laravel.
-
-## Membuat Controller Baru
-
-### Cara Pertama :
-Membuat file controller baru dengan cara klik kanan > new file, pada folder `app\Http\Controllers`. Pada contoh ini kita akan buat file controller baru `BookController`. Setelah berhasil dibuat, kita akan menuliskan sintaks kode paling dasar untuk membuat sebuah controller.
+Untuk menampilkan view dari controller, pertama-tama kita harus membuat file viewnya terlebih dahulu. Kita buat file baru pada folder `resources\views`, yaitu `books.blade.php`. Selanjutnya silahkan tambahkan kode sebagai berikut : 
 ```
-<?php
-
-namespace App\Http\Controllers;
-
-use Illuminate\Http\Request;
-
-class BookController extends Controller {
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Data Buku</title>
+</head>
+<body>
     
-}
+    <h2>Kumpulan Buku Terbaik</h2>
+    <marquee>Membaca adalah jendela dunia</marquee>
+
+    <ol>
+        <li>Meditation - Marcus Aurelius</li>
+        <li>Machine Learning for Beginner - Chris Sebastian</li>
+        <li>Mindset - Carol Dweck</li>
+        <li>Ego is The Enemy - Ryan Holiday</li>
+        <li>Atomic Habit - James Clear</li>
+    </ol>
+    
+</body>
+</html>
 ```
-`BookController` merupakan nama classnya. Untuk menjadikan class ini diidentifikasi sebagai controller maka kita lakukan extends `Controller`.
-
-
-### Cara Kedua :
-Cara kedua merupakan cara yang lebih mudah yaitu dengan menggunakan perintah yang disediakan oleh Laravel yaitu php artisan. Buka command prompt di folder laravel saat ini, lalu ketikkan php artisan, maka akan muncul berbagai perintah yang tersedia yang diawali dengan php artisan. Kita dapat menggunakan perintah `php artisan make:controller NamaController` untuk membuat controller baru.
-
-<br>
-
-Sekarang coba ketikkan pada cmd `php artisan make:controller CategoryController`, maka akan dibuat sebuah file baru pada folder `app\Http\Controllers` bernama CategoryController, bahkan kita tidak perlu menuliskan sintaks kode dasar controller karena secara otomatis sudah dibuatkan oleh Laravel.
-
-## Membuat route baru menggunakan Controller
-Pada materi sebelumnya kita sudah belajar bagaimana caranya membuat route baru. Coba perhatikan route awal yang telah disediakan laravel pada folder `routes` :
+Setelah membuat file view, kita ubah kode pada method `index()` yang berada pada class `BookController` dari
 ```
-Route::get('/', function () {
-    return view('welcome');
-});
-```
-Kode diatas merupakan contoh pembuatan route yang tidak menggunakan controller. Route diatas menggunakan sebuah function tanpa class yang menampilkan view `welcome`. Kita akan coba membuat route baru lagi yang menggunakan controller, atau mengakses function yang ada pada class controller.
-
-<br>
-
-Pertama-tama tambahkan kode sebagai berikut pada `BookController`
-```
-class BookController extends Controller
-{
-    public function index(){
+ public function index(){
     	return "Halo saya dari method index(), class BookController";
-    }
+ }
+```
+ menjadi
+```
+public function index(){
+    	return view('books');
+ }
+``` 
+perlu diingat bahwasannya `books.blade.php` merupakan gabungan dari nama file dan ekstensi file :
+- `books` : nama file
+- `blade.php` : ekstensi file  
+
+Untuk menampilkan view, pada method `view()` cukup menuliskan nama filenya sebagai argumen. dalam contoh ini misalnya `'books'`. Sekarang, kita coba kembali mengakses `localhost:8000/book`, maka akan muncul tampilan dari file view `books.blade.php` yang sudah kita buat sebelumnya.
+![alt text](https://i.ibb.co/Qpz2SFk/Capture.jpg)
+
+## Menampilkan Data dari Controller
+Function `view()` merupakan function bawaan laravel yang berguna untuk menampilkan tampilan dari suatu file view yang sudah kita buat. Selain memasukkan nama file, kita juga bisa menyiapkan data untuk kita kirimkan ke view. Sekarang coba perhatikan `BookController` pada method `index()` yang sudah kita buat sebelumnya. 
+```
+public function index(){
+    	return view('books');
+ }
+``` 
+Pada contoh kode diatas kita baru hanya menampilkan viewnya saja. Untuk mengirimkan data yang nantinya bisa ditampilkan pada view, maka kita bisa menambahkan satu argumen baru lagi sebagai berikut :
+```
+public function index(){
+    	return view('books',[
+            'namasaya' => 'Dicky Pratama'
+        ]);
 }
 ```
-Pada class `BookController` kita menambahkan sebuah function baru bernama index(). Dalam index itu akan mengembalikan atau menampilkan sebuah data string `"Halo saya dari method index(), class BookController"`.  Jika sudah ditambahkan, selanjutnya kita buat sebuah route baru pada file `web.php`. Untuk membuat sebuah route baru yang menggunakan controller atau menggunakan function yang berada pada class controller, dapat kita lakukan dengan menuliskan kode berikut :
+`'namasaya'` yang berada di sebelah kiri merupakan key untuk mengakses data, sedangkan `'Dicky Pratama'` merupakan datanya. Kita memanggil key dari dari suatu data untuk menampilkan datanya, dalam contoh ini untuk menampilkan data `'Dicky Pratama'` kita panggil keynya yaitu `'namasaya'`. Untuk memanggil key dari suatu data dalam suatu view dapat dilakukan dengan cara sebagai berikut :  
 ```
-Route::get('/book', [BookController::class, 'index']);
-```
-Kode diatas dapat diartikan menjadi "saat user menuliskan `localhost:8000/book`, maka panggil method index yang ada pada class `BookController`". Sekarang coba akses pada web browser maka akan tampil data string yang sudah kita buat sebelumnya pada class `BookController` method `index()`, yaitu `"Halo saya dari method index(), class BookController"`.
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Data Buku</title>
+</head>
+<body>
 
-## Link
-https://laravel.com/docs/8.x/controllers
+    <h2>Kumpulan Buku Terbaik</h2>
+    <marquee>Membaca adalah jendela dunia</marquee>
+
+    <ol>
+        <li>Meditation - Marcus Aurelius</li>
+        <li>Machine Learning for Beginner - Chris Sebastian</li>
+        <li>Mindset - Carol Dwek</li>
+        <li>Ego is The Enemy - Ryan Holiday</li>
+        <li>Atomic Habit - James Clear</li>
+    </ol>
+
+    <h4>Situs web ini dibuat oleh : {{ $namasaya }}</h4>
+    
+</body>
+</html>
+```
+Sekarang kita coba akses kembali `localhost:8000/book` maka akan tampil data yang sudah kita buat dicontroller
+![alt text](https://i.ibb.co/nnT0Rqy/Capture.jpg)
+
+## Menampilkan Data Array dari Controller
+Sebelumnya kita telah menggunakan sebuah key untuk menampilkan sebuah data pada view kita. Kita juga bisa menggunakan sebuah key untuk mengakses banyak data sekaligus. Biasanya data ini berbentuk array atau kumpulan data. Sekarang kita buka kembali file `BookController` kita lalu pada function `index()` kita tambahkan kode sebagai berikut :
+```
+public function index(){
+        $comics = [
+            "Naruto - Masashi Kishimoto",
+            "One Piece - Eichiro Oda",
+            "Dragon Ball Super - Akira Toriyama",
+            "Vinland Saga - Makoto Yukimura",
+            "Doraemon - Fujio F. Fujiko"
+        ];
+
+    	return view('books',[
+            'namasaya' => 'Dicky Pratama',
+            'comics' => $comics
+        ]);
+}
+```
+Tak seperti data `'Dicky Pratama'` yang bisa langsung kita akses dengan memanggil key `namasaya`, kita tidak bisa mengakses data array `comics` ini secara langsung, tetapi harus dipecah-pecah terlebih dahulu dengan perulangan sebagai berikut : 
+
+```
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Data Buku</title>
+</head>
+<body>
+    <h2>Kumpulan Buku Terbaik</h2>
+    <marquee>Membaca adalah jendela dunia</marquee>
+
+    <ol>
+        <li>Meditation - Marcus Aurelius</li>
+        <li>Machine Learning for Beginner - Chris Sebastian</li>
+        <li>Mindset - Carol Dwek</li>
+        <li>Ego is The Enemy - Ryan Holiday</li>
+        <li>Atomic Habit - James Clear</li>
+    </ol>
+
+    <h2>Kumpulan Buku Komik Terbaik</h2>
+    <ol>
+        @foreach ($comics as $comic)
+            <li>{{ $comic }}</li>
+        @endforeach
+    </ol>
+
+    <h4>Situs web ini dibuat oleh : {{ $namasaya }}</h4>
+    
+</body>
+</html>
+```
+
+`@foreach` menandakan bahwa kita akan melakukan perulangan sebanyak data yang ada di `$comics` karena terdapat lima data maka akan terjadi lima kali perulangan, sedangkan `$comic` akan mewakili tiap-tiap data yang ada pada array `$comics`. Sekarang kita coba akses kembali route `/book` kembali, buka `localhost:8000/book` pada browser, maka kumpulan data-data komik yang sudah kita buat pada controller akan tampil seperti berikut :
+
+![alt text](https://i.ibb.co/BCRq8JW/Capture.jpg)
+
+
 
