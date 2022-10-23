@@ -19,13 +19,13 @@ Route::get('/', function () {
 });
 
 Route::get('/home', function () {
-    return view('home');
+    return view('home',['title' => 'Halaman Utama']);
 });
 
 Route::get('/contact', function () {
-    return view('contact');
+    return view('contact', ['title' => 'Kontak Saya']);
 });
 
 Route::get('/about', function () {
-    return view('about');
+    return view('about', ['title' => 'Tentang Saya']);
 });

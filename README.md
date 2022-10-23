@@ -1,147 +1,112 @@
-# Belajar Laravel Part 6 : Blade Templates
+# Belajar Laravel Part 6.1 : Blade Templates II
 
-## Blade Templates
-File template blade menggunakan ekstensi file `.blade.php` dan biasanya disimpan di direktori `resources/views` sederhananya setiap file view yang kita buat dengan ekstensi `.blade.php` dapat mengunakan blade templates sehingga kita bisa menggunakan berbagai sintaks kode blade templates seperti `@yield`, `@include`, `@if`, `{{ $someting }}` untuk menampilkan data dan sebagainya.
+Sebelumnya kita sudah membuat web dengan fitur navigasi sederhana. Namun, pada kode sebelumnya, masih terdapat banyak sekali redundansi atau penulisan kode yang sama secara berulang-bulang. Pada materi ini kita akan mengurangi redundansi dari kode yang sudah kita tuliskan sebelumnya dengan menggunakan beberapa sintaks yang bisa kita gunakan pada blade templates.
 
-Pada materi kali ini kita akan melihat mengapa kita membutuhkan blade templates beserta dengan manfaatnya dalam pengembangan sistem yang kita bangun. Materi ini juga akan menjadi dasar sebelum kita menerapkan template-template ui tertentu yang banyak kita jumpai di internet seperti `SB Admin 2`.
-
-## Membuat View
-Pertama-tama kita akan membuat tiga file view yaitu `home.blade.php`, `contact.blade.php`, dan `about.blade.php`. Pada `home.blade.php` kita tambahkan kode sebagai berikut :
+Pertama-tama kita buat file view baru yaitu `master.blade.php` dengan kode sebagai berikut :
 ```
 <html>
-    <head>
-        <title>Halaman Utama</title>
-    </head>
-    <body>
 
-        <header>
- 
-            <h2>Situs Biografi Saya</h2>
-            <nav>
-                <a href="/home">Home</a>
-                |
-                <a href="/contact">Kontak Saya</a>
-                |
-                <a href="/about">Tentang Saya</a>
-            </nav>
-        </header>
-        <hr/>
+<head>
+    <title>{{ $title }}</title>
+</head>
 
-        <p>Selamat datang di situs biografi saya, berikut adalah buku-buku favorit saya.</p>
-    
-        <h2>Kumpulan Buku favorit</h2>
-    
-        <ol>
-            <li>Meditation - Marcus Aurelius</li>
-            <li>Machine Learning for Beginner - Chris Sebastian</li>
-            <li>Mindset - Carol Dwek</li>
-            <li>Ego is The Enemy - Ryan Holiday</li>
-            <li>Atomic Habit - James Clear</li>
-        </ol>
-    
-	<hr/>
-	<footer>
-		<p>&copy; 2022 Dicky Pratama</p>
-	</footer>
-    
-    </body>
+<body>
+
+    <header>
+
+        <h2>Situs Biografi Saya</h2>
+        <nav>
+            <a href="/home">Home</a>
+            |
+            <a href="/contact">Kontak Saya</a>
+            |
+            <a href="/about">Tentang Saya</a>
+
+        </nav>
+    </header>
+    <hr />
+
+    <!-- bagian konten -->
+    @yield('content')
+
+    <hr />
+    <footer>
+        <p>&copy; 2022 Dicky Pratama</p>
+    </footer>
+
+</body>
+
 </html>
-```
-Selanjutnya kode untuk halaman `contact` :
-```
-<html>
-    <head>
-        <title>Kontak Saya</title>
-    </head>
-    <body>
-        <header>
- 
-            <h2>Situs Biografi Saya</h2>
-            <nav>
-                <a href="/home">Home</a>
-                |
-                <a href="/contact">Kontak Saya</a>
-                |
-                <a href="/about">Tentang Saya</a>
-            </nav>
-        </header>
-        <hr/>
-    
-        <h2>Kontak Saya</h2>
-        <table >
-            <tr>
-                <td>Email</td>
-                <td>:</td>
-                <td>abecede@gmail.com</td>
-            </tr>
-            <tr>
-                <td>Hp</td>
-                <td>:</td>
-                <td>0896-8898-9988</td>
-            </tr>
-        </table>
-    
-	<hr/>
-	<footer>
-		<p>&copy; 2022 Dicky Pratama</p>
-	</footer>
-    
-    </body>
-    </html>
-```
-Selanjutnya kode untuk halaman about :
-```
-<html>
-    <head>
-        <title>Tentang Saya</title>
-    </head>
-    <body>
 
-        <header>
- 
-            <h2>Situs Biografi Saya</h2>
-            <nav>
-                <a href="/home">Home</a>
-                |
-                <a href="/contact">Kontak Saya</a>
-                |
-                <a href="/about">Tentang Saya</a>
-
-            </nav>
-        </header>
-        <hr/>
-    
-        <h2>Tentang Saya</h2>
-    
-        <p>
-            Lorem, ipsum dolor sit amet consectetur adipisicing elit. Sit enim modi temporibus possimus deserunt quas! Eveniet odit magnam ea distinctio. Assumenda, reiciendis fugiat consequuntur nisi aut obcaecati minima architecto! Unde.
-        </p>
-    
-	<hr/>
-	<footer>
-		<p>&copy; 2022 Dicky Pratama</p>
-	</footer>
-    
-    </body>
-    </html>
 ```
-Selanjutnya kita tambahkan tiga route baru pada `web.php` untuk membuka tiga halaman yang sudah kita buat sebelumnya.
+Selanjutnya kita ubah kode pada `home.blade.php` menjadi seperti berikut :
+```
+@extends('master')
+
+@section('content')
+    <p>Selamat datang di situs biografi saya, berikut adalah buku-buku favorit saya.</p>
+
+    <h2>Kumpulan Buku favorit</h2>
+
+    <ol>
+        <li>Meditation - Marcus Aurelius</li>
+        <li>Machine Learning for Beginner - Chris Sebastian</li>
+        <li>Mindset - Carol Dwek</li>
+        <li>Ego is The Enemy - Ryan Holiday</li>
+        <li>Atomic Habit - James Clear</li>
+    </ol>
+@endsection
+```
+Selanjutnya kita ubah kode pada `contact.blade.php` menjadi seperti berikut :
+```
+@extends('master')
+
+@section('content')
+    <h2>Kontak Saya</h2>
+    <table>
+        <tr>
+            <td>Email</td>
+            <td>:</td>
+            <td>abecede@gmail.com</td>
+        </tr>
+        <tr>
+            <td>Hp</td>
+            <td>:</td>
+            <td>0896-8898-9988</td>
+        </tr>
+    </table>
+@endsection
+```
+Selanjutnya kita ubah kode pada `about.blade.php` menjadi seperti berikut :
+```
+@extends('master')
+
+@section('content')
+    <h2>Tentang Saya</h2>
+
+    <p>
+        Lorem, ipsum dolor sit amet consectetur adipisicing elit. Sit enim modi temporibus possimus deserunt quas! Eveniet
+        odit magnam ea distinctio. Assumenda, reiciendis fugiat consequuntur nisi aut obcaecati minima architecto! Unde.
+    </p>
+@endsection
+```
+`@extends('master')` berarti kita ingin menggunakan semua kode yang berada pada file `master`. Kode yang berada diantara `@section` dan `@endsection` merupakan kode yang akan menggantikan bagian `@yield('content')` yang berada pada `master.blade.php`. Data `@yield('content)` ini akan bersifat dinamis atau berubah-ubah, tergantung apa yang dipilih oleh pengguna.
+
+Sekarang jika kita mengakses `localhost:8000/home` kembali, maka akan terjadi error `Undefined variable $title` hal ini terjadi karena kita belum mengirimkan data pada tiap-tiap view yang sudah kita buat. Untuk memperbaiki error ini, kita bisa membuka `web.php` terlebih dahulu, lalu kita kirimkan data title sebagai berikut : 
 ```
 Route::get('/home', function () {
-    return view('home');
+    return view('home',['title' => 'Halaman Utama']);
 });
 
 Route::get('/contact', function () {
-    return view('contact');
+    return view('contact', ['title' => 'Kontak Saya']);
 });
 
 Route::get('/about', function () {
-    return view('about');
+    return view('about', ['title' => 'Tentang Saya']);
 });
 ```
-Selanjutnya kita coba untuk mengakses route yang sudah kita buat, mulai dari home yaitu `localhost:8000/home`. Jika berhasil maka akan tampil halaman home yang sudah kita buat sebelumnya. Pada tampilan home ini kita memiliki navigasi yang dapat memudahkan kita berpindah-pindah halaman dengan lebih mudah yang telah kita buat pada bagian header.
-
-Jika kita perhatikan, kode ketiga view kita memiliki kesamaan pada bagian awal dan akhirnya. Jika kode view yang kita miliki masih sedikit, hal ini tidak akan menjadi masalah. Akan tetapi, jika file view kita sudah sangat banyak, maka hal ini akan menyulitkan kita kedepannya dalam mengembangkan sistem yang kita buat. Selain itu, menuliskan kode-kode yang sama secara berulang sangatlah tidak disarankan dan tidak efektif. Oleh sebab itu, kita dapat mengurangi redundansi atau pengulangan kode-kode kita dengan menggunakan beberapa sintaks blade templates.
+Jika kita mengakses `localhost:8000/home` kembali maka web kita sudah berfungsi kembali, dengan kode yang lebih baik dari sebelumnya. Dapat kita amati bahwa mekanisme yang kita gunakan untuk menampilkan data `title` hampir sama dengan `@yield('content')`. Tiap nama key pada ketiga route yang kita buat adalah sama yaitu `$title`. Namun,  dapat memiliki nilai yang berbeda-beda tergantung dengan route apa yang diakses oleh user. begitu juga dengan `@yield('content)` yang dapat memiliki kode yang berbeda-beda sedangkan kode di luar `@yield` tetap sama.
 
 ## Link
 https://laravel.com/docs/8.x/blade
