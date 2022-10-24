@@ -1,86 +1,117 @@
-# Belajar Laravel Part 5 : Request Data
+# Belajar Laravel Part 7 : CRUD - READ (Membaca Data)
 
-## Input Request
-Seringkali sistem yang kita buat akan menerima inputan atau `request` dari user. `Request` biasanya dilakukan oleh pengguna untuk melakukan operasi data tertentu seperti `menambah data`, `menghapus data`, `mengubah data` dan `melihat data`. Secara garis besar ada dua jenis cara yang dapat dilakukan oleh user untuk mengirimkan request yaitu:
-1. Mengirimkan request melalui URL
-2. Mengirimkan request melalui input form
+## CRUD
+CRUD merupakan singkatan untuk Create, Read, Update, dan Delete. CRUD Merupakan fitur atau operasi dasar untuk mengelola data yang ada pada sistem kita. 
+- Create : Menambahkan data
+- Read : Menampilkan data
+- Update : Memperbaruhi data
+- Delete : Menghapus data
 
-Kita dapat menampilkan atau menerima `request` tersebut untuk melakukan operasi tertentu, baik yang dikirim melalui URL, maupun dari input form.
+Seperti yang kita ketahui, untuk mengelola data yang ada di database, kita memerlukan query. Laravel telah menyediakan fitur atau tools yang dapat lebih memudahkan kita untuk melakukan query bernama `Query Builder`.
 
-### Menerima Request dari URL
-Agar user dapat mengirimkan `request` melalui URL, maka kita harus menyediakannya terlebih dahulu pada route kita. Pertama-tama kita buka file `BookController` selanjutnya kita tambahkan function baru bernama `favoriteBook()` dengan kode sebagai berikut : 
-```
-public function favoritebook($namaBuku){
-        return $namaBuku;
-}
-```
-Selanjutnya kita buka file `web.php` lalu kita tambahkan route baru sebagai berikut :
-```
-Route::get('/favoritebook/{namabuku}', [BookController::class, 'favoritebook']);
-```
-Sekarang coba akses route yang baru kita buat dengan cara membuka `localhost:8000/favoritebook/Mindset`. Jika sudah berhasil, maka akan muncul sebuah teks bertuliskan `Mindset` yang merupakan `request` yang kita kirimkan melalui URL. Jika ingin menambahkan spasi, kita bisa menggunakan `%20` seperti berikut : `localhost:8000/favoritebook/Mindset%20-%20Carol%20Dweck`, maka hasil yang akan ditampilkan adalah `Mindset - Carol Dweck`.
+## Persiapan
+Sebelum membuat fitur CRUD kita memerlukan database dan sebuah tabel. Pertama-tama kita buat database baru, bisa dari PhpMyAdmin atau melalui command prompt. Dalam proyek ini kita akan menggunakan studi kasus sistem informasi perpustakaan. Nama database yang akan dibuat adalah `dbperpus`.
 
-### Menerima Request dari Input Form
-Selanjutnya kita akan mencoba menampilkan `request` yang dilakukan user melalui input form. Input form ini akan menggunakan method post. Cara kerja input form method post ini mirip dengan pengiriman `request` melalui URL. Namun, pada input form dengan method post, `request` yang dikirimkan oleh user tidak dikirim melalui URL, sehingga data `request` tidak akan terlihat di alamat URL untuk tujuan keamanan. Hal ini karena data-data sensitif seperti password akan sangat berbahaya apabila diinputkan melalui URL karena dapat terlihat secara langsung maupun secara tidak langsung (dari history browser).
+Setelah membuat database maka kita buat tabel baru untuk permulaan kita buat tabel `buku` dengan kolom-kolom sebagai berikut :
+- id : int (auto increment)
+- judul : varchar (255)
+- kategori : varchar (50)
+- jumlah : int
+
+Setelah membuat tabel, kita inputkan dua data ke tabel `buku` yang sudah kita buat (bisa menggunakan command prompt atau phpmyadmin). Dalam contoh ini kita buat dua data misalnya :
+
+| Judul  | Kategori | Jumlah |
+| ------ | -------- | ------ |
+| Atomic Habits  | Pengembangan Diri | 100
+| Outliers  | Pengembangan Diri | 50
+
+Selanjutnya buka file `.env` lalu ubah
+```
+DB_DATABASE=laravel
+```
+menjadi nama dari database yang sudah kita buat sebelumnya
+```
+DB_DATABASE=dbperpus
+```
 
 <br>
 
-Langkah pertama untuk menerima `request` dari input form, maka kita butuh halaman formnya terlebih dahulu. Kita buat file view baru `formbook.blade.php`, lalu kita masukkan source code sebagai berikut:
+
+## Membaca Data dari Database (Read)
+Pertama-tama kita akan membuat controllernya terlebih dahulu. Sebelumnya kita telah belajar cara membuat controller beserta functionnya. Terdapat cara yang lebih cepat dan mudah untuk membuat controller yaitu dengan perintah :
+```
+php artisan make:controller BookController --resource
+```
+Sekarang kita buka file `BookController`, dapat kita lihat bahwa secara default controller kita sudah memiliki tujuh function. Ketujuh function inilah yang akan kita gunakan untuk membuat fitur CRUD pada sistem kita. Namun, pada materi ini yang akan kita gunakan hanya method `index()` saja yaitu method yang digunakan untuk menampilkan data. 
+
+Catatan : Jika dirasa menganggu, komentar-komentar default yang ada pada controller juga bisa dihapus.
+
+Sebelumnya kita buat file view terlebih dahulu untuk menampilkan data-data yang akan kita kirimkan melalui `BookController`. Kita buat folder baru dalam folder `resources\views` yaitu `buku`. Selanjutnya dalam folder buku kita buat file view `index.blade.php` lalu tambahkan kode sebagai berikut :
 ```
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <title>Buku Favorit</title>
+	<title>CRUD</title>
 </head>
 <body>
-	<h2>Buku Favorit</h2>
-    <form action="/formbook/show" method="post">
-		<input type = "hidden" name = "_token" value = "<?php echo csrf_token() ?>">
-      
-      	Nama Buku :
-		<input type="text" name="nama"> <br/>
-		Penulis :
-		<input type="text" name="penulis"> <br/>
-		<input type="submit" value="Simpan">
-	</form>
+ 
+	<h3>Data Buku</h3>
+ 
+	<a href="#"> + Tambah Buku Baru</a>
+	
+	<br/>
+	<br/>
+ 
+	<table border="1">
+		<tr>
+			<th>Judul</th>
+			<th>Kategori</th>
+			<th>Jumlah</th>
+			<th>Aksi</th>
+		</tr>
+		@foreach($books as $book)
+		<tr>
+			<td>{{ $book->judul }}</td>
+			<td>{{ $book->kategori }}</td>
+			<td>{{ $book->jumlah }}</td>
+			<td>
+				<a href="#">Ubah</a>
+				|
+				<a href="#">Hapus</a>
+			</td>
+		</tr>
+		@endforeach
+	</table>
 </body>
 </html>
 ```
-Kita akan menggunakan `BookController` agar lebih rapi, maka selanjutnya kita buka `BookController` lalu tambahkan function baru `formbook()` dan tambahkan kode sebagai berikut :
+Karena kita belum akan membuat fitur tambah buku baru, ubah data buku, dan hapus buku, maka untuk hrefnya bisa kita isi dengan `#` saja ini menandakan bahwa saat di klik maka tidak akan terjadi apa-apa.
+
+Selanjutnya Perhatikan pada `@foreach` terdapat variabel `$books`. Kita belum mengisi data `$books`, oleh karena itu kita kembali ke `BookController` lalu tambahkan kode seperti berikut : 
 ```
-public function formbook(){
-    return view('formbook');
+public function index() {
+    	$books = DB::table('buku')->get();
+    	return view('buku.index',['books' => $books]);
 }
 ```
-Jika sudah, maka kita buat route baru di `web.php` dan kita panggil function `formbook` yang berada pada `BookController` untuk menampilkan view `formbook` yang sudah kita buat.
+Pada kode diatas kita menggunakan `Query Builder` untuk mendapatkan data dari database. Sederhananya saat kita mengetikkan `DB::table('namatabel')->get();` maka kita melakukan query 
 ```
-Route::get('/formbook', [BookController::class, 'formbook']);
+select * from namatabel
 ```
-Selanjutnya kita buka `http://localhost:8000/formbook` maka akan tampil halaman seperti berikut :
-![alt text](https://i.ibb.co/yXyJW8S/Capture.jpg)
+Data-data ini nantinya akan kita simpan dalam variabel `$books` untuk kita kirimkan ke view. pada saat kita melakukan `return view()` kita memasukkan `buku.index`, hal ini karena kita membuat file view `index.blade.php` yang berada dalam folder `views\buku`.
 
-Setelah kita membuat view dan input form untuk user, sekarang kita akan menampilkan request yang diinputkan oleh user. Pertama-tama kita buka kembali `BookController`, selanjutnya kita tambah function `showbook()` sebagai berikut :
+Terakhir kita buat route baru pada `web.php` dengan menambahkan kode sebagai berikut :
 ```
-public function showbook(Request $request){
-        $nama = $request->input('nama');
-     	$penulis = $request->input('penulis');
-        return $nama." - ".$penulis;
-}
+Route::get('/','BookController@index');
 ```
-Selanjutnya kita tambahkan route baru dengan memanggil function `showbook` yang sudah kita buat selanjutnya
-```
-Route::post('/formbook/show', [BookController::class, 'showbook']);
-```
-Kita buka kembali halaman form kita `http://localhost:8000/formbook`, selanjutnya kita coba masukkan data misalnya
-- Nama Buku : Bicara itu Ada Seninya
-- Penulis : Oh Su Hyang  
+Sekarang kita coba akses halaman utama yaitu `localhost:8000` atau `localhost:8000/` Jika sudah tepat maka data-data yang sebelumnya sudah kita tambahkan secara manual di database. Akan tampil pada view Laravel yang sudah kita buat seperti berikut :
+![alt text](https://i.ibb.co/KsKQSyq/Capture.jpg)
 
-Selanjutnya kita tekan tombol submit, maka akan muncul nama buku dan penulis yang sebelumnya sudah kita inputkan yaitu
-`Bicara itu Ada Seninya - Oh Su Hyang`. Jika kita perhatikan, data request yang kita inputkan pada input form tidak muncul pada url. URL yang ditampilkan tidak berubah, tetap `http://localhost:8000/formbook` inilah salah satu tujuan dari metode request dengan input form menggunakan method post yaitu mengamankan dan menyembunyikan data.
+
 
 
 ## Link
-https://laravel.com/docs/8.x/requests#main-content
+https://laravel.com/docs/8.x/queries
 
 
 
