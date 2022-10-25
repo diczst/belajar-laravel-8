@@ -1,4 +1,4 @@
-# Belajar Laravel Part 8 : CRUD - CREATE (Menambah Data)
+# Belajar Laravel Part 7.1 : CRUD - CREATE (Menambah Data)
 
 ## Menambahkan Data ke Database (CREATE)
 Pada materi sebelumnya kita telah belajar cara menampilkan data dari database. Namun, proses input atau membuat data masih kita lakukan di luar sistem yang kita buat seperti menggunakan bantuan phpmyadmin. Pada materi ini kita akan membuat fitur penambahan data pada sistem kita, agar kita dapat menambahkan data di dalam sistem yang kita buat.
@@ -180,6 +180,8 @@ Terakhir kita menambahkan modal yang akan kita tampilkan saat tombol `Tambah Buk
 ```
 Pada form yang terdapat pada modal kita terdapat kode `@csrf`, sebuah kode yang merupakan bagian dari blade templates untuk mempermudah kita membuat CSRF token. Laravel memang mewajibkan setiap form yang kita buat untuk menggunakan `@csrf` untuk keamanan data. CSRF berguna untuk mencegah request atau input data yang bukan berasal dari sistem kita.
 
+`required="required"` berarti input atau request ini wajib diisi, jika tidak diisi, maka akan tampil notifikasi yang mengingatkan pengguna untuk mengisi input tersebut.
+
 Selanjutnya dalam modal kita, kita membuat sebuah input form dengan method `post` saat tombol tambah data ditekan maka kita akan memanggil route `/buku/store. Ingat bahwa kita belum membuat route ini, maka selanjutnya kita akan membuat route baru untuk menambahkan data ke dalam database.
 
 Buka `web.php` tambahkan route baru dengan kode berikut :
@@ -212,6 +214,12 @@ public function store(Request $request){
 	    return redirect('/');
     }
 ```
+
+`$request->judul` berisi nilai yang diinputkan di dalam inputan kita yaitu :
+```
+ <input type="text" name="judul" required="required"> <br><br>
+```
+`name="judul"` berarti nama input atau request ini adalah judul.
 
 Sekarang buka kembali halaman utama `localhost:8000` sekarang kita coba tambahkan data baru. Jika berhasil maka data baru yang kita tambahkan akan tampil pada halaman utama dan juga di database kita seperti berikut : 
 
