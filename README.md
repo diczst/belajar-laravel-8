@@ -1,118 +1,232 @@
-# Belajar Laravel Part 7 : CRUD - READ (Membaca Data)
+# Belajar Laravel Part 8 : CRUD - CREATE (Menambah Data)
 
-## CRUD
-CRUD merupakan singkatan untuk Create, Read, Update, dan Delete. CRUD Merupakan fitur atau operasi dasar untuk mengelola data yang ada pada sistem kita. 
-- Create : Menambahkan data
-- Read : Menampilkan data
-- Update : Memperbaruhi data
-- Delete : Menghapus data
+## Menambahkan Data ke Database (CREATE)
+Pada materi sebelumnya kita telah belajar cara menampilkan data dari database. Namun, proses input atau membuat data masih kita lakukan di luar sistem yang kita buat seperti menggunakan bantuan phpmyadmin. Pada materi ini kita akan membuat fitur penambahan data pada sistem kita, agar kita dapat menambahkan data di dalam sistem yang kita buat.
 
-Seperti yang kita ketahui, untuk mengelola data yang ada di database, kita memerlukan query. Laravel telah menyediakan fitur atau tools yang dapat lebih memudahkan kita untuk melakukan query bernama `Query Builder`.
+Pertama-tama kita perlu membuat view baru untuk menambahkan view. Namun, agar kita tidak perlu terlalu banyak membuat file view nantinya, maka kita akan menggunakan modal. Modal sering juga disebut dengan dialog box / pop up window, sederhananya modal merupakan sebuah view yang masih merupakan bagian dari view yang lain karena kemunculannya masih bergantung dan berada pada suatu view.
 
-## Persiapan
-Sebelum membuat fitur CRUD kita memerlukan database dan sebuah tabel. Pertama-tama kita buat database baru, bisa dari PhpMyAdmin atau melalui command prompt. Dalam proyek ini kita akan menggunakan studi kasus sistem informasi perpustakaan. Nama database yang akan dibuat adalah `dbperpus`.
-
-Setelah membuat database maka kita buat tabel baru untuk permulaan kita buat tabel `buku` dengan kolom-kolom sebagai berikut :
-- id : int (auto increment)
-- judul : varchar (255)
-- kategori : varchar (50)
-- jumlah : int
-
-Setelah membuat tabel, kita inputkan dua data ke tabel `buku` yang sudah kita buat (bisa menggunakan command prompt atau phpmyadmin). Dalam contoh ini kita buat dua data misalnya :
-
-| Judul  | Kategori | Jumlah |
-| ------ | -------- | ------ |
-| Atomic Habits  | Pengembangan Diri | 100
-| Outliers  | Pengembangan Diri | 50
-
-Selanjutnya buka file `.env` lalu ubah
+Langkah pertama untuk membuat modal adalah membuat file CSS untuk mengatur tampilan modal. Sebelumnya agar lebih rapi, pada folder public kita tambahkan folder `css`. Selanjutnya kita buat new file dengan nama `style.css` dengan kode sebagai berikut :
 ```
-DB_DATABASE=laravel
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+  }
+  
+  .modal-content {
+    background-color: #fefefe;
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; /* Could be more or less, depending on screen size */
+  }
+  
+  .close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+  }
+  
+  .close:hover,
+  .close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+  }
 ```
-menjadi nama dari database yang sudah kita buat sebelumnya
+Langkah selanjutnya adalah menambahkan javascript untuk memunculkan modal. Seperti sebelumnya agar lebih rapi, kita buat folder baru terlebih dahulu bernama `js` selanjutnya pada folder `js` kita tambahkan file baru `modal.js` dengan kode sebagai berikut : 
 ```
-DB_DATABASE=dbperpus
+// Get the modal
+var modal = document.getElementById("myModal");
+
+// Get the button that opens the modal
+var btn = document.getElementById("myBtn");
+
+// Get the <span> element that closes the modal
+var span = document.getElementsByClassName("close")[0];
+
+// When the user clicks the button, open the modal 
+btn.onclick = function() {
+  modal.style.display = "block";
+}
+
+// When the user clicks on <span> (x), close the modal
+span.onclick = function() {
+  modal.style.display = "none";
+}
+
+// When the user clicks anywhere outside of the modal, close it
+window.onclick = function(event) {
+  if (event.target == modal) {
+    modal.style.display = "none";
+  }
+}
 ```
 
-<br>
-
-
-## Membaca Data dari Database (Read)
-Pertama-tama kita akan membuat controllernya terlebih dahulu. Sebelumnya kita telah belajar cara membuat controller beserta functionnya. Terdapat cara yang lebih cepat dan mudah untuk membuat controller yaitu dengan perintah :
-```
-php artisan make:controller BookController --resource
-```
-Sekarang kita buka file `BookController`, dapat kita lihat bahwa secara default controller kita sudah memiliki tujuh function. Ketujuh function inilah yang akan kita gunakan untuk membuat fitur CRUD pada sistem kita. Namun, pada materi ini yang akan kita gunakan hanya method `index()` saja yaitu method yang digunakan untuk menampilkan data. 
-
-Catatan : Jika dirasa menganggu, komentar-komentar default yang ada pada controller juga bisa dihapus.
-
-Sebelumnya kita buat file view terlebih dahulu untuk menampilkan data-data yang akan kita kirimkan melalui `BookController`. Kita buat folder baru dalam folder `resources\views` yaitu `buku`. Selanjutnya dalam folder buku kita buat file view `index.blade.php` lalu tambahkan kode sebagai berikut :
+Jika sudah, kita tambahkan kode berikut ke view yang sudah kita buat sebelumnya yaitu `index.blade.php`
 ```
 <!DOCTYPE html>
 <html>
+
 <head>
-	<title>CRUD</title>
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    <title>CRUD</title>
 </head>
+
 <body>
- 
-	<h3>Data Buku</h3>
- 
-	<a href="#"> + Tambah Buku Baru</a>
-	
-	<br/>
-	<br/>
- 
-	<table border="1">
-		<tr>
-			<th>Judul</th>
-			<th>Kategori</th>
-			<th>Jumlah</th>
-			<th>Aksi</th>
-		</tr>
-		@foreach($books as $book)
-		<tr>
-			<td>{{ $book->judul }}</td>
-			<td>{{ $book->kategori }}</td>
-			<td>{{ $book->jumlah }}</td>
-			<td>
-				<a href="#">Ubah</a>
-				|
-				<a href="#">Hapus</a>
-			</td>
-		</tr>
-		@endforeach
-	</table>
+
+    <h3>Data Buku</h3>
+
+    <a id="myBtn" href="#"> + Tambah Buku Baru</a>
+
+    <br />
+    <br />
+
+    <table border="1">
+        <tr>
+            <th>Judul</th>
+            <th>Kategori</th>
+            <th>Jumlah</th>
+            <th>Aksi</th>
+        </tr>
+        @foreach ($books as $book)
+            <tr>
+                <td>{{ $book->judul }}</td>
+                <td>{{ $book->kategori }}</td>
+                <td>{{ $book->jumlah }}</td>
+                <td>
+                    <a href="#">Ubah</a>
+                    |
+                    <a href="#">Hapus</a>
+                </td>
+            </tr>
+        @endforeach
+    </table>
+
+    {{-- modal --}}
+    <div id="myModal" class="modal">
+
+        <!-- Modal content -->
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Tambah Buku Baru</h2>
+            <form action="/pegawai/store" method="post">
+                {{ csrf_field() }}
+                <label for="fname">Judul : </label><br>
+                <input type="text" name="judul" required="required"> <br><br>
+                
+                <label for="fname">Kategori : </label><br>
+                <input type="text" name="judul" required="required"> <br><br>
+
+                <label for="fname">Jumlah : </label><br>
+                <input type="text" name="judul" required="required"> <br><br>
+              
+                <input type="submit" value="Tambah Data">
+            </form>
+        </div>
+
+    </div>
+
+    <script src="{{ asset('js/modal.js') }}"></script>
 </body>
+
 </html>
 ```
-Karena kita belum akan membuat fitur tambah buku baru, ubah data buku, dan hapus buku, maka untuk hrefnya bisa kita isi dengan `#` saja ini menandakan bahwa saat di klik maka tidak akan terjadi apa-apa.
+Pada kode diatas di bagian tag head kita menambahkan kode file css yang sudah kita buat : 
+```
+ <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+```
+Pada bagian ```<a href="#"> + Tambah Buku Baru</a>``` kita ubah menjadi
+```
+<a id="myBtn" href="#"> + Tambah Buku Baru</a>
+```
+Lalu pada akhir `</body>` kita menambahkan file `js` yang sudah kita buat :
+```
+<script src="{{ asset('js/modal.js') }}"></script>
+```
+Terakhir kita menambahkan modal yang akan kita tampilkan saat tombol `Tambah Buku Baru` ditekan:
+```
+{{-- modal --}}
+    <div id="myModal" class="modal">
 
-Selanjutnya Perhatikan pada `@foreach` terdapat variabel `$books`. Kita belum mengisi data `$books`, oleh karena itu kita kembali ke `BookController` lalu tambahkan kode seperti berikut : 
-```
-public function index() {
-    	$books = DB::table('buku')->get();
-    	return view('buku.index',['books' => $books]);
-}
-```
-Pada kode diatas kita menggunakan `Query Builder` untuk mendapatkan data dari database. Sederhananya saat kita mengetikkan `DB::table('namatabel')->get();` maka kita melakukan query 
-```
-select * from namatabel
-```
-Data-data ini nantinya akan kita simpan dalam variabel `$books` untuk kita kirimkan ke view. pada saat kita melakukan `return view()` kita memasukkan `buku.index`, hal ini karena kita membuat file view `index.blade.php` yang berada dalam folder `views\buku`.
+        <!-- Modal content -->
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Tambah Buku Baru</h2>
+            <form action="/buku/store" method="post">
+                @csrf
+                <label for="judul">Judul : </label><br>
+                <input type="text" name="judul" required="required"> <br><br>
+                
+                <label for="kategori">Kategori : </label><br>
+                <input type="text" name="kategori" required="required"> <br><br>
 
-Terakhir kita buat route baru pada `web.php` dengan menambahkan kode sebagai berikut :
-```
-Route::get('/','BookController@index');
-```
-Sekarang kita coba akses halaman utama yaitu `localhost:8000` atau `localhost:8000/` Jika sudah tepat maka data-data yang sebelumnya sudah kita tambahkan secara manual di database. Akan tampil pada view Laravel yang sudah kita buat seperti berikut :
-![alt text](https://i.ibb.co/KsKQSyq/Capture.jpg)
+                <label for="jumlah">Jumlah : </label><br>
+                <input type="text" name="jumlah" required="required"> <br><br>
+              
+                <input type="submit" value="Tambah Data">
+            </form>
+        </div>
 
+    </div>
+```
+Pada form yang terdapat pada modal kita terdapat kode `@csrf`, sebuah kode yang merupakan bagian dari blade templates untuk mempermudah kita membuat CSRF token. Laravel memang mewajibkan setiap form yang kita buat untuk menggunakan `@csrf` untuk keamanan data. CSRF berguna untuk mencegah request atau input data yang bukan berasal dari sistem kita.
 
+Selanjutnya dalam modal kita, kita membuat sebuah input form dengan method `post` saat tombol tambah data ditekan maka kita akan memanggil route `/buku/store. Ingat bahwa kita belum membuat route ini, maka selanjutnya kita akan membuat route baru untuk menambahkan data ke dalam database.
+
+Buka `web.php` tambahkan route baru dengan kode berikut :
+```
+Route::post('/buku/store',[BookController::class, 'store']);
+```
+Karena pada materi sebelumnya, saat membuat controller `BookController` kita menggunakan perintah
+```
+php artisan make:controller BookController --resource
+```
+Maka secara otomatis method store untuk menambahkan data sudah tersedia di dalam controller. Sekarang kita hanya perlu untuk menambahkan kode pada method store untuk melakukan penambahan data ke database.
+
+Catatan :
+- create : method ini digunakan untuk membuka atau menampilkan view form tambah data (membuka file view baru)
+- store : method ini digunakan untuk menambahkan data saat tombol tambah data pada form ditekan.
+
+Karena kita menggunakan modal, maka kita tidak perlu membuat view baru lagi untuk menambahkan data, oleh karena itu method create dapat diabaikan atau dihapus saja.
+
+Selanjutnya pada method store kita tambahkan kode sebagai berikut :
+```
+public function store(Request $request){
+        // insert data ke table buku
+        DB::table('buku')->insert([
+            'judul' => $request->judul,
+            'kategori' => $request->kategori,
+            'jumlah' => $request->jumlah
+        ]);
+
+	    // alihkan ke halaman utama
+	    return redirect('/');
+    }
+```
+
+Sekarang buka kembali halaman utama `localhost:8000` sekarang kita coba tambahkan data baru. Jika berhasil maka data baru yang kita tambahkan akan tampil pada halaman utama dan juga di database kita seperti berikut : 
+
+Penambahan data
+![alt text](https://i.ibb.co/VtmVVVS/Capture.jpg)
+
+Data tampil (berhasil ditambahkan)
+![alt text](https://i.ibb.co/qdrX0TJ/Capture.jpg)
+
+Data tampil di database (berhasil ditambahkan)
+![alt text](https://i.ibb.co/4tM0fdJ/Capture.jpg)
 
 
 ## Link
 https://laravel.com/docs/8.x/queries
-
-
-
-
+https://www.w3schools.com/css/css_howto.asp
+https://www.w3schools.com/tags/att_script_src.asp
+https://www.w3schools.com/howto/tryit.asp?filename=tryhow_css_modal
