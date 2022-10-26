@@ -25,19 +25,17 @@ class BookController extends Controller
 	    return redirect('/');
     }
 
-    public function show($id)
-    {
-        //
+    public function show($id){
     }
 
-    public function edit($id)
-    {
-        //
+    public function edit($id){
+        $book = DB::table('buku')->where('id',$id)->get()->first();
+        return view('buku.edit',['book' => $book]);
     }
 
     public function update(Request $request, $id)
     {
-        //
+        
     }
 
     public function destroy($id)

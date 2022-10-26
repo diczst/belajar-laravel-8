@@ -28,7 +28,7 @@
                 <td>{{ $book->kategori }}</td>
                 <td>{{ $book->jumlah }}</td>
                 <td>
-                    <a href="#">Ubah</a>
+                    <a href="/buku/edit/{{ $book->id }}">Ubah</a>
                     |
                     <a href="#">Hapus</a>
                 </td>
@@ -47,13 +47,13 @@
                 @csrf
                 <label for="judul">Judul : </label><br>
                 <input type="text" name="judul" required="required"> <br><br>
-                
+
                 <label for="kategori">Kategori : </label><br>
                 <input type="text" name="kategori" required="required"> <br><br>
 
                 <label for="jumlah">Jumlah : </label><br>
                 <input type="text" name="jumlah" required="required"> <br><br>
-              
+
                 <input type="submit" value="Tambah Data">
             </form>
         </div>

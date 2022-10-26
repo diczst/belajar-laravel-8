@@ -14,4 +14,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 Route::get('/',[BookController::class, 'index']);
+Route::get('/buku/edit/{param}',[BookController::class, 'edit']);
+
+
 Route::post('/buku/store',[BookController::class, 'store']);
