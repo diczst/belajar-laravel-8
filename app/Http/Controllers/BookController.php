@@ -26,6 +26,7 @@ class BookController extends Controller
     }
 
     public function show($id){
+        
     }
 
     public function edit($id){
@@ -33,13 +34,16 @@ class BookController extends Controller
         return view('buku.edit',['book' => $book]);
     }
 
-    public function update(Request $request, $id)
-    {
-        
+    public function update(Request $request) {
+        DB::table('buku')->where('id',$request->id)->update([
+            'judul' => $request->judul,
+            'kategori' => $request->kategori,
+            'jumlah' => $request->jumlah
+        ]);
+        return redirect('/');
     }
 
-    public function destroy($id)
-    {
-        //
+    public function destroy($id){
+
     }
 }

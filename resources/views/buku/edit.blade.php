@@ -15,8 +15,10 @@
     <br />
 
     <h2>Tambah Buku Baru</h2>
-    <form action="/buku/store" method="post">
+    <form action="/buku/update" method="post">
         @csrf
+        <input type="hidden" name="id" value="{{ $book->id }}"> <br/>
+        
         <label for="judul">Judul : </label><br>
         <input type="text" name="judul" value="{{ old('judul', $book->judul) }}" required> <br><br>
 
@@ -26,7 +28,7 @@
         <label for="jumlah">Jumlah : </label><br>
         <input type="text" name="jumlah" value="{{ old('jumlah', $book->jumlah) }}" required> <br><br>
 
-        <input type="submit" value="Tambah Data">
+        <input type="submit" value="Edit Data">
     </form>
 
 
