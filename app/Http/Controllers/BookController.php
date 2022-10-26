@@ -44,6 +44,7 @@ class BookController extends Controller
     }
 
     public function destroy($id){
-
+        DB::table('buku')->where('id',$id)->delete();
+        return redirect('/');
     }
 }

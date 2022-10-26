@@ -19,3 +19,4 @@ Route::get('/buku/edit/{param}',[BookController::class, 'edit']);
 Route::post('/buku/update', [BookController::class, 'update']);
 
 Route::post('/buku/store',[BookController::class, 'store']);
+Route::get('/buku/destroy/{param}', [BookController::class, 'destroy']);

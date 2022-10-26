@@ -30,7 +30,7 @@
                 <td>
                     <a href="/buku/edit/{{ $book->id }}">Ubah</a>
                     |
-                    <a href="#">Hapus</a>
+                    <a href="/buku/destroy/{{ $book->id }}">Hapus</a>
                 </td>
             </tr>
         @endforeach
