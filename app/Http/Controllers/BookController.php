@@ -47,4 +47,12 @@ class BookController extends Controller
         DB::table('buku')->where('id',$id)->delete();
         return redirect('/');
     }
+
+    public function search(Request $request){
+		$search = $request->search;
+        $books = DB::table('buku')->where('judul','like',"%".$search."%")
+        ->paginate();
+
+        return view('buku.index',['books' => $books]);
+    }
 }

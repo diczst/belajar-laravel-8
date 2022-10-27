@@ -14,6 +14,13 @@
     <br />
     <br />
 
+	<form action="/buku/search" method="GET">
+		<input type="text" name="search" placeholder="Cari Buku .." value="{{ old('search') }}">
+		<input type="submit" value="Cari">
+	</form>
+
+    <br />
+
     <table border="1">
         <tr>
             <th>Judul</th>
