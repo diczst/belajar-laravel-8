@@ -9,7 +9,7 @@ class BookController extends Controller
 {
 
     public function index() {
-    	$books = DB::table('buku')->get();
+    	$books = DB::table('buku')->paginate(10);
     	return view('buku.index',['books' => $books]);
     }
 

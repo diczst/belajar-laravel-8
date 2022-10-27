@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-
 <head>
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
     <title>CRUD</title>
@@ -35,6 +34,16 @@
             </tr>
         @endforeach
     </table>
+
+    <br/>
+    
+	Halaman : {{ $books->currentPage() }} <br/>
+	Jumlah Data : {{ $books->total() }} <br/>
+	Data Per Halaman : {{ $books->perPage() }} <br/>
+
+    <br/>
+
+    {{ $books->links() }}
 
     {{-- modal --}}
     <div id="myModal" class="modal">
