@@ -25,7 +25,8 @@
 
                 <form class="row" action="/buku/search" method="GET">
                     <div class="col">
-                        <input class="form-control" type="text" name="search" placeholder="Cari Buku .." value="{{ old('search') }}">
+                        <input class="form-control" type="text" name="search" placeholder="Cari Buku .."
+                            value="{{ old('search') }}">
                     </div>
                     <div class="col">
                         <input class="btn btn-primary" type="submit" value="Cari">
@@ -67,29 +68,45 @@
         </div>
     </div>
 
-
-
     {{-- modal --}}
     <div id="myModal" class="modal">
         <div class="modal-dialog">
             <!-- Modal content -->
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Tambah Buku Baru</h2>
-            <form action="/buku/store" method="post">
-                @csrf
-                <label for="judul">Judul : </label><br>
-                <input type="text" name="judul" required="required"> <br><br>
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Tambah Buku Baru</h2>
+                <form action="/buku/store" method="post">
+                    @csrf
+                    <div class="form-group">
+                        <label for="judul">Judul : </label>
+                        <input class="form-control" type="text" name="judul" value="{{ old('judul') }}">
+                        @error('judul')
+                            <div class="alert alert-danger">{{ $message }}</div>
+                        @enderror
+                    </div>
 
-                <label for="kategori">Kategori : </label><br>
-                <input type="text" name="kategori" required="required"> <br><br>
 
-                <label for="jumlah">Jumlah : </label><br>
-                <input type="text" name="jumlah" required="required"> <br><br>
+                    <div class="form-group">
+                        <label for="kategori">Kategori : </label>
+                        <input class="form-control" type="text" name="kategori" value="{{ old('kategori') }}">
+                        @error('kategori')
+                            <div class="alert alert-danger">{{ $message }}</div>
+                        @enderror
+                    </div>
 
-                <input type="submit" value="Tambah Data">
-            </form>
-        </div>
+                    <div class="form-group">
+                        <label for="jumlah">Jumlah : </label>
+                        <input class="form-control" type="text" name="jumlah" value="{{ old('jumlah') }}">
+                        @error('jumlah')
+                            <div class="alert alert-danger">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <br>
+
+                    <input class="btn btn-primary" type="submit" value="Tambah Data">
+                </form>
+            </div>
         </div>
     </div>
 

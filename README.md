@@ -1,9 +1,70 @@
-# Belajar Laravel Part 10 : Menerapkan Bootstrap
+# Belajar Laravel Part 11 : Validasi Form
 
-## Bootstrap
-Bootstrap adalah framework css yang sangat populer digunakan untuk mengembangkan aplikasi web. Bootstrap akan sangat membantu kita dalam mendesain tampilkan web atau sistem yang kita buat.
+## Validasi Form
+Sebelumnya kita telah membuat form untuk menambahkan data dan mengubah data. Bagaimana apabila pada form yang kita sediakan, user tidak mengisi data dan langsung menekan tombol tambah data? Maka akan terdapat dua kemungkinan yang akan terjadi. Pertama data tersebut berhasil ditambahkan ke database, tetapi data yang ditambahkan itu kosong karena kolom bersifat nullable (dapat dikosongkan). Kedua akan terjadi error pada sistem apabila data yang tidak diisi tersebut pada database kolomnya bersifat not null (tidak boleh kosong).
 
-Untuk menerapkan bootstrap silahkan ubah beberapa bagian kode di file view `index.blade.php` menjadi seperti berikut :
+Untuk mengatasi hal ini maka kita memerlukan fitur validasi. Validasi akan mencegah user melakukan tindakan tertentu seperti mengosongkan data atau memasukkan data yang tidak sesuai tipenya (misalnya data yang seharusnya angka, input yang diberikan user string) dan sebagainya.
+
+Kita akan menggunakan validasi yang disediakan oleh laravel, maka pertama-tama kita hapus terlebih dahulu required yang ada pada form tambah data buku yang sudah kita buat sebelumnya menjadi sebagai berikut :
+```
+{{-- modal --}}
+    <div id="myModal" class="modal">
+        <div class="modal-dialog">
+            <!-- Modal content -->
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Tambah Buku Baru</h2>
+            <form action="/buku/store" method="post">
+                @csrf
+                <div class="form-group">
+                    <label for="judul">Judul : </label>
+                    <input class="form-control" type="text" name="judul">
+                </div>
+
+                <div class="form-group">
+                    <label for="kategori">Kategori : </label>
+                     <input class="form-control" type="text" name="kategori">
+                </div>
+
+                <div class="form-group">
+                    <label for="jumlah">Jumlah : </label>
+                    <input class="form-control" type="text" name="jumlah">
+                </div>
+
+                <br>
+
+                <input class="btn btn-primary" type="submit" value="Tambah Data">
+            </form>
+        </div>
+        </div>
+    </div>
+```
+Required bawaan sudah dihapus. Selanjutnya kita tambahkan kode sebagai berikut pada `BookController`
+```
+public function store(Request $request){
+        $this->validate($request,[
+            'judul' => 'required|min:3|max:20',
+            'kategori' => 'required',
+            'jumlah' => 'required|numeric'
+         ], [
+            'judul.required' => "Judul wajib diisi"
+         ]);
+  
+        // insert data ke table buku
+        DB::table('buku')->insert([
+            'judul' => $request->judul,
+            'kategori' => $request->kategori,
+            'jumlah' => $request->jumlah
+        ]);
+
+	    // alihkan ke halaman utama
+	    return redirect('/');
+}
+```
+Untuk mengkustomisasi pesan error default, maka berikan argumen ketiga berupa array. Satu elemen array merupakan sebuah pasangan key value. Untuk key-nya dapat diisi dengan format `namarequest.jenisvalidasi` seperti `judul.required` lalu untuk messagenya berupa string seperti pada kode diatas valuenya adalah `"Judul wajib diisi"`
+
+
+Selanjutnya kita buka kembali `index.blade.php` lalu tambahkan kode sebagai berikut:
 ```
 <!DOCTYPE html>
 <html>
@@ -32,7 +93,8 @@ Untuk menerapkan bootstrap silahkan ubah beberapa bagian kode di file view `inde
 
                 <form class="row" action="/buku/search" method="GET">
                     <div class="col">
-                        <input class="form-control" type="text" name="search" placeholder="Cari Buku .." value="{{ old('search') }}">
+                        <input class="form-control" type="text" name="search" placeholder="Cari Buku .."
+                            value="{{ old('search') }}">
                     </div>
                     <div class="col">
                         <input class="btn btn-primary" type="submit" value="Cari">
@@ -74,29 +136,44 @@ Untuk menerapkan bootstrap silahkan ubah beberapa bagian kode di file view `inde
         </div>
     </div>
 
-
-
     {{-- modal --}}
     <div id="myModal" class="modal">
         <div class="modal-dialog">
             <!-- Modal content -->
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Tambah Buku Baru</h2>
-            <form action="/buku/store" method="post">
-                @csrf
-                <label for="judul">Judul : </label><br>
-                <input type="text" name="judul" required="required"> <br><br>
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Tambah Buku Baru</h2>
+                <form action="/buku/store" method="post">
+                    @csrf
+                    <div class="form-group">
+                        <label for="judul">Judul : </label>
+                        <input class="form-control" type="text" name="judul" value="{{ old('judul') }}">
+                        @error('judul')
+                            <div class="alert alert-danger">{{ $message }}</div>
+                        @enderror
+                    </div>
 
-                <label for="kategori">Kategori : </label><br>
-                <input type="text" name="kategori" required="required"> <br><br>
+                    <div class="form-group">
+                        <label for="kategori">Kategori : </label>
+                        <input class="form-control" type="text" name="kategori" value="{{ old('kategori') }}">
+                        @error('kategori')
+                            <div class="alert alert-danger">{{ $message }}</div>
+                        @enderror
+                    </div>
 
-                <label for="jumlah">Jumlah : </label><br>
-                <input type="text" name="jumlah" required="required"> <br><br>
+                    <div class="form-group">
+                        <label for="jumlah">Jumlah : </label>
+                        <input class="form-control" type="text" name="jumlah" value="{{ old('jumlah') }}">
+                        @error('jumlah')
+                            <div class="alert alert-danger">{{ $message }}</div>
+                        @enderror
+                    </div>
 
-                <input type="submit" value="Tambah Data">
-            </form>
-        </div>
+                    <br>
+
+                    <input class="btn btn-primary" type="submit" value="Tambah Data">
+                </form>
+            </div>
         </div>
     </div>
 
@@ -105,24 +182,12 @@ Untuk menerapkan bootstrap silahkan ubah beberapa bagian kode di file view `inde
 
 </html>
 ```
+Untuk menampilkan pesan error dari validasi, kita menggunakan `@error blade directive` yang akan menampilkan error sesuai dengan jenis validasi yang sudah ditentukan di controller. Adapun sintaks error blade directive adalah sebagai berikut `@error('namarequest') {{ $message }} @enderror`.
 
-Untuk menandakan bahwa kita sudah menerapkan bootstrap ke dalam tampilan sistem kita, maka kita menggunakan css eksternal bootstrap secara online : 
-```
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-```
+Untuk mengetahui berbagai `validation rules` atau aturan validasi, silakan mengunjungi link yang sudah disediakan di bawah.
 
-Sekarang coba buka kembali halaman utama, seharusnya sekarang tampilan aplikasi kita sudah berubah, tetapi navigasi pagination menjadi sangat besar, sehingga tidak sesuai dengan harapan. Untuk memperbaiki ini silakan buka `app\Providers\AppServiceProvider.php` lalu tambahkan `Paginator::useBootstrap();` pada function `bootO`.
-```
-public function boot() {
-        Paginator::useBootstrap();
-}
-```
-Untuk menerapkan bootstrap pada tiap elemen html maka kita perlu menambahkan class yang sudah disediakan oleh bootstrap. Untuk penjelasan detail terkait class bootstrap dapat dilihat lebih rinci pada halaman dokumentasi bootstrap pada bagian `Links`
-
-Sekarang sistem kita sudah menerapkan framework css Bootstrap untuk mendesain tampilan :
-![alt text](https://i.ibb.co/j6xtbLh/image.png)
 
 ## Links
-https://getbootstrap.com/docs/5.0/getting-started/introduction/
+- https://getbootstrap.com/docs/5.0/getting-started/introduction/
+- https://laravel.com/docs/8.x/validation#main-content
 

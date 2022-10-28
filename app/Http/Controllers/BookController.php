@@ -14,6 +14,15 @@ class BookController extends Controller
     }
 
     public function store(Request $request){
+
+        $this->validate($request,[
+            'judul' => 'required|min:3|max:20',
+            'kategori' => 'required',
+            'jumlah' => 'required|numeric'
+         ], [
+            'judul.required' => "Judul wajib diisi"
+         ]);
+  
         // insert data ke table buku
         DB::table('buku')->insert([
             'judul' => $request->judul,
