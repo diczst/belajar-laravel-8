@@ -1,80 +1,92 @@
-# Belajar Laravel Part 12 : Migration
+# Belajar Laravel Part 13 : Eloquent
 
-## Migration 
-Migrasi merupakan fitur yang berperan sebagai version control untuk database pada sistem kita. Migrasi memungkinkan kita untuk berbagi skema database aplikasi kita kepada orang lain. Migrasi akan sangat banyak berguna. Misalnya pada kasus apabila ada kolom baru yang ditambahkan ke database, tim kita yang melakukan pull dari github dapat melakukan migrate untuk menambahkannya, sehingga tidak perlu menambahkan atau mengkonfigurasinya secara manual di local databasenya. Migrate juga mempermudah kita dalam proses pembuatan skema database yaitu table dan kolom.
+## Eloquent 
+Sebelumnya kita telah membuat fitur `CRUD` menggunakan `query buider`. Terdapat sebuah fitur canggih lainnya yang dimiliki Laravel untuk membuat fitur `CRUD` tersebut menjadi lebih mudah yaitu `Eloquent`. Berdasarkan dokumentasi Laravel, `Eloquent` adalah sebuah ORM (object-relational maper) dimana tiap-tiap tabel yang ada di database  memiliki sebuah model yang mewakilinya. Model inilah yang memungkinkan kita untuk melakukan CRUD pada tabel dalam database kita.
 
-## Membuat File Migration
-Untuk membuat file migration, kita dapat memberikan command seperti berikut pada cmd :
+## Persiapan
+Pertama-tama, jika teman-teman belum memiliki file migration yang sudah kita generate pada materi sebelumnya, maka masukkan perintah ini terlebih dahulu :
 ```
 php artisan make:migration create_kategori_table
 ```
-Maka Laravel akan membuat file migration baru yang terletak di `database\migrations` dalam contoh ini file migration yang dibuat oleh laravel bernama `2022_10_29_025340_create_kategori_table.php` dengan kode sebagai berikut :
+Selanjutnya masukkan kode sebagai berikut pada function `up()`:
 ```
-<?php
-
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
-
-class CreateKategoriTable extends Migration
-{
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+public function up()
     {
-        Schema::create('kategori', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-        });
-    }
-
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
-    {
-        Schema::dropIfExists('kategori');
-    }
-}
-```
-Function `up()` digunakan untuk menjalankan migration. `Schema::create()` berarti kita ingin membuat sebuah tabel baru dalam database kita. Dalam body function create() kita bisa memasukkan kolom-kolom yang kita butuhkan dalam table seperti kolom id dengan mengetikkan `$table->id()` dan `$table->timestamps()` untuk tanggal data diinput. Dalam contoh ini kita akan membuat tabel `kategori` dengan kolom-kolomnya adalah `id` dan `nama` untuk nama kategori. Maka kode pada file migration kita akan menjadi seperti berikut :
-```
- public function up() {
         Schema::create('kategori', function (Blueprint $table) {
             $table->id();
             $table->string('nama');
         });
 }
 ```
-Sedangkan Function `down()` akan dijalankan apabila kita memberikan perintah `php artisan migrate:rollback`atau kembali pada keadaan sebelum kita melakukan migration terbaru, dalam kasus ini tabel kategori akan hilang apabila kita melakukan rollback.
-
-## Menjalankan File Migration
-Sekarang kita sudah memiliki sebuah file migration. Selanjutnya kita bisa menjalankan file migration yang kita miliki dengan perintah sebagai berikut :
+Selanjutnya kita lakukan migration dengan perintah
 ```
 php artisan migrate
 ```
-Maka pada database, kita akan melihat banyak table baru yang dibuat secara otomatis. Tabel-tabel baru  seperti `password_resets`, `personal_accesss_token` berasal dari file migration bawaan yang sudah disediakan oleh Laravel, boleh dihapus saja jika memang dirasa tidak diperlukan.
-![alt text](https://i.ibb.co/Zd2nbnS/image.png)
-Untuk mengembalikan database ke keadaan sebelumnya kita dapat menggunakan perintah
+
+## Menampilkan Data dengan Eloquent
+Sekarang pada database terdapat tabel kategori. Selanjutnya untuk menerapkan `Eloquent` maka kita perlu membuat suatu model untuk merepresentasikan table kita. Teman-teman bisa membuat model dengan menjalankan perintah :
 ```
-php artisan migrate:rollback
+php artisan make:model Kategori
 ```
-![alt text](https://i.ibb.co/Yfcw5J6/image.png)
-atau untuk mengembalikan database keadaan beberapa langkah sebelumnya dapat menggunakan kode:
+Selanjutnya buka folder `app\Models` lalu buka file model kita bernama `Kategori.php` yang sudah digenerate oleh Laravel melalui perintah yang kita jalankan sebelumnya. Lalu tambahkan kode sebagai berikut :
 ```
-php artisan migrate:rollback --step=5
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Kategori extends Model
+{
+    // use HasFactory; 
+    protected $table = "kategori";
+}
 ```
-Untuk mengembalikan database kembali pada keadaan awal dapat menggunakan perintah:
+`HasFactory` dapat dihilangkan atau dikomentari karena tidak akan kita gunakan karena ini akan dipakai jika kita ingin menambahkan fake data untuk testing. Sebelumnya perlu diingat bahwa penamaan table default pada laravel adalah jamak. Jadi table `kategori` akan diketahui sebagai table `kategoris` sehingga perlu untuk menuliskan `protected $table = "kategori"` agar Laravel mengetahui table tersebut bernama kategori bukan `kategoris`.
+
+Agar lebih rapi, kita perlu membuat sebuah controller terlebih dahulu. Gunakan perintah
 ```
-php artisan migrate:fresh
+php artisan make:controller KategoriController --resource
 ```
-Tabel migrations akan tetap ada untuk memantau migrasi yang kita lakukan pada database.
+`--resource` berarti kita akan membuat fungsi-fungsi yang kita butuhkan untuk CRUD secara otomatis saat file `KategoriController` digenerate. Selanjutnya pada `KategoriController.php` tambahkan kode sebagai berikut :
+```
+public function index()
+    {
+        // mengambil semua data kategori
+    	$kategoris = Kategori::all();
+ 
+    	// mengirim data-data kategori ke view kategori
+    	return view('kategori.index', ['kategoris' => $kategoris]);
+    }
+```
+Sebelumnya kita belum membuat file view index untuk kategori. Maka kita buat terlebih dahulu file view index atau file view untuk menampilkan data-data kategori ini. Buat folder baru di `resources\views` berni nama folder `kategori` lalu didalamnya kita buat file view baru lagi bernama `index.blade.php` lalu kita tambahkan kode sebagai berikut :
+```
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Eloquent</title>
+</head>
+<body>
+ 
+<h1>Data Kategori</h1>
+ 
+<ul>
+	@foreach($kategoris as $kategori)
+		<li>{{ "Kategori : ". $kategori->nama}}</li>
+	@endforeach
+</ul>
+ 
+</body>
+</html>
+```
+Terakhir kita tambahkan route baru di `web.php` untuk menampilkan data kategori kita
+```
+Route::get('/kategori',[KategoriController::class, 'index']);
+```
+Jika belum ada data yang tampil, tambahkan beberapa data secara manual melalui Phpmyadmin. Jika sudah tampil, maka kita sudah berhasil menampilkan data dengan menggunakan Eloquent atau class Model untuk mewakili tabel dari database.
+
 
 ## Links
-- https://laravel.com/docs/8.x/migrations
+- https://laravel.com/docs/8.x/eloquent
 

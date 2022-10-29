@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BookController;
+use App\Http\Controllers\KategoriController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -22,3 +23,6 @@ Route::post('/buku/store',[BookController::class, 'store']);
 Route::get('/buku/destroy/{param}', [BookController::class, 'destroy']);
 
 Route::get('/buku/search', [BookController::class, 'search']);
+
+Route::get('/kategori',[KategoriController::class, 'index']);
+
