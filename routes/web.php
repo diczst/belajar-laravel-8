@@ -26,3 +26,13 @@ Route::get('/buku/search', [BookController::class, 'search']);
 
 Route::get('/kategori',[KategoriController::class, 'index']);
 
+Route::post('/kategori/store',[KategoriController::class, 'store']);
+
+Route::get('/kategori/edit/{param}',[KategoriController::class, 'edit']);
+Route::post('/kategori/update', [KategoriController::class, 'update']);
+Route::get('/kategori/destroy/{param}', [KategoriController::class, 'destroy']);
+
+
+
+
+
