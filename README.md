@@ -131,6 +131,7 @@ Untuk menampilkan data maka kita perlu membuat view terlebih dahulu. Tambahkan f
 </html>
 ```
 perhatikan pada `<td>{{ $buku->isbn->nomor }}</td>`. Disini kita ingin menampikan nomor isbn dari tiap-tiap data buku, tetapi data yang kita lihat di tabel adalah id dari isbn.Inilah peran dari eloquent relationship. Dengan foreign key id yang terdapat pada tabel-tabel buku kita bisa menampilkan nomornya berdasarkan id tersebut. Secara sederhana `$buku->isbn->nomor` dapat dibaca : tampilkan nomor isbn buku berdasarkan id isbn yang ada pada tiap-tiap buku.
+
 ![alt text](https://i.ibb.co/54Ms2vN/image.png)
 
 Selanjutnya kita buat controller baru dengan menjalankan perintah:
