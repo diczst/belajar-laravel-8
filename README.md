@@ -1,86 +1,160 @@
-# Belajar Laravel Part 5 : Request Data
+# Belajar Laravel Part 15 : Eloquent Relationship - One to One
+Seringkali database kita memiliki beberapa table yang saling berrelasi. Misalnya sebuah buku memiliki isbn, ini berarti berarti tabel buku berrelasi dengan tabel isbn. Fitur eloquent dalam laravel memungkinkan kita dengan mudah mengatur hubungan atau relasi antar tabel dengan lebih mudah. Berikut adalah jenis-jenis relasi dasar:
+- One to One
+- One to Many
+- Many to Many  
 
-## Input Request
-Seringkali sistem yang kita buat akan menerima inputan atau `request` dari user. `Request` biasanya dilakukan oleh pengguna untuk melakukan operasi data tertentu seperti `menambah data`, `menghapus data`, `mengubah data` dan `melihat data`. Secara garis besar ada dua jenis cara yang dapat dilakukan oleh user untuk mengirimkan request yaitu:
-1. Mengirimkan request melalui URL
-2. Mengirimkan request melalui input form
+Pada materi kali ini kita akan menerapkan relasi One to One dengan menggunakan eloquent. Pertama-tama yang harus dilakukan adalah membuat file migration untuk membuat tabel baru.
 
-Kita dapat menampilkan atau menerima `request` tersebut untuk melakukan operasi tertentu, baik yang dikirim melalui URL, maupun dari input form.
-
-### Menerima Request dari URL
-Agar user dapat mengirimkan `request` melalui URL, maka kita harus menyediakannya terlebih dahulu pada route kita. Pertama-tama kita buka file `BookController` selanjutnya kita tambahkan function baru bernama `favoriteBook()` dengan kode sebagai berikut : 
+## Membuat File Migration dan Tabel
+Membuat file migration untuk tabel isbn
 ```
-public function favoritebook($namaBuku){
-        return $namaBuku;
+php artisan make:migration create_isbn_table
+```
+Membuat file migration untuk tabel buku
+```
+php artisan make:migration create_buku_table
+```
+Catatan : `Urutan pembuatan file migration harus sangat diperhatikan`. Pada kasus ini file migration isbn harus dibuat terlebih dahulu karena table buku memiliki ketergantungan dengan isbn. Jika membuat file migration untuk tabel buku terlebih dahulu, maka dipastikan akan error saat menjalankan perintah migration.
+
+Selanjutnya pada masing-masing file migration tambahkan kode sebagai berikut:
+
+Pada file migration untuk tabel buku :
+```
+public function up()
+{
+        Schema::create('buku', function (Blueprint $table) {
+            $table->id();
+
+            $table->bigInteger('isbn_id')->unsigned();
+            $table->foreign('isbn_id')->references('id')->on('isbn');
+
+            $table->string('judul');
+        });
 }
 ```
-Selanjutnya kita buka file `web.php` lalu kita tambahkan route baru sebagai berikut :
+Pada file migration untuk table isbn:
 ```
-Route::get('/favoritebook/{namabuku}', [BookController::class, 'favoritebook']);
+Schema::create('isbn', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+});
 ```
-Sekarang coba akses route yang baru kita buat dengan cara membuka `localhost:8000/favoritebook/Mindset`. Jika sudah berhasil, maka akan muncul sebuah teks bertuliskan `Mindset` yang merupakan `request` yang kita kirimkan melalui URL. Jika ingin menambahkan spasi, kita bisa menggunakan `%20` seperti berikut : `localhost:8000/favoritebook/Mindset%20-%20Carol%20Dweck`, maka hasil yang akan ditampilkan adalah `Mindset - Carol Dweck`.
+Selanjutnya jalankan migration dengan perintah:
+```
+php artisan migrate
+```
+catatan : jika kamu sudah memiliki table-table, maka gunakan `php artisan migrate:fresh` untuk mereset ulang tabel-tabel yang ada pada database.
 
-### Menerima Request dari Input Form
-Selanjutnya kita akan mencoba menampilkan `request` yang dilakukan user melalui input form. Input form ini akan menggunakan method post. Cara kerja input form method post ini mirip dengan pengiriman `request` melalui URL. Namun, pada input form dengan method post, `request` yang dikirimkan oleh user tidak dikirim melalui URL, sehingga data `request` tidak akan terlihat di alamat URL untuk tujuan keamanan. Hal ini karena data-data sensitif seperti password akan sangat berbahaya apabila diinputkan melalui URL karena dapat terlihat secara langsung maupun secara tidak langsung (dari history browser).
+## Relasi One to One Dengan Eloquent
+Untuk menggunakan eloquent maka kita perlu membuat model untuk mewakili tabel-tabel yang sudah kita miliki pada database.  
+Membuat model isbn
+```
+php artisan make:model isbn
+```
+Membuat model buku
+```
+php artisan make:model Buku
+```
+Selanjutnya pada model isbn tambahkan kode sebagai berikut:
+```
+class Isbn extends Model
+{
+    use HasFactory;
 
-<br>
+    protected $table = 'isbn';
+    public $timestamps = false;
+    protected $guarded = ['id'];
 
-Langkah pertama untuk menerima `request` dari input form, maka kita butuh halaman formnya terlebih dahulu. Kita buat file view baru `formbook.blade.php`, lalu kita masukkan source code sebagai berikut:
+    public function buku(){
+        return $this->hasOne(Buku::class);
+    }
+}
+```
+Perhatikan pada function `buku()`. Function ini berarti tabel isbn memiliki relasi dengan tabel buku dengan rincian satu isbn hanya memiliki satu buku (satu nomor isbn untuk satu buku).  
+Selanjutnya pada model Buku tambahkan kode sebagai berikut:
+```
+class Buku extends Model
+{
+    use HasFactory;
+
+    protected $table = 'buku';
+    public $timestamps = false;
+    protected $guarded = ['id'];
+
+    public function isbn(){
+        return $this->belongsTo(Isbn::class);
+    }
+}
+```
+
+Perhatikan pada function `isbn()`. Function ini berarti tabel buku memiliki relasi dengan tabel isbn dengan rincian satu buku hanya dimiliki oleh satu isbn saja.
+
+Catatan : `biasanya belongsTo terdapat pada tabel yang memiliki foreign key`  
+
+## Menampilkan Data
+Untuk menampilkan data maka kita perlu membuat view terlebih dahulu. Tambahkan folder `book` di folder `resources\view`. Selanjutnya kita buat file view baru `index.blade.php`
 ```
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <title>Buku Favorit</title>
+	<title>Eloquent One to One</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 </head>
 <body>
-	<h2>Buku Favorit</h2>
-    <form action="/formbook/show" method="post">
-		<input type = "hidden" name = "_token" value = "<?php echo csrf_token() ?>">
-      
-      	Nama Buku :
-		<input type="text" name="nama"> <br/>
-		Penulis :
-		<input type="text" name="penulis"> <br/>
-		<input type="submit" value="Simpan">
-	</form>
+ 
+	<div class="container">
+		<div class="card">
+			<div class="card-body">
+				<h5 class="text-center">Eloquent One To One Relationship</h5>
+				<table class="table table-bordered table-striped">
+					<thead>
+						<tr>
+							<th>Judul</th>
+							<th>ISBN</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach($bukus as $buku)
+						<tr>
+							<td>{{ $buku->judul }}</td>
+							<td>{{ $buku->isbn->nomor }}</td>
+						</tr>
+						@endforeach
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+ 
 </body>
 </html>
 ```
-Kita akan menggunakan `BookController` agar lebih rapi, maka selanjutnya kita buka `BookController` lalu tambahkan function baru `formbook()` dan tambahkan kode sebagai berikut :
+perhatikan pada `<td>{{ $buku->isbn->nomor }}</td>`. Disini kita ingin menampikan nomor isbn dari tiap-tiap data buku, tetapi data yang kita lihat di tabel adalah id dari isbn.Inilah peran dari eloquent relationship. Dengan foreign key id yang terdapat pada tabel-tabel buku kita bisa menampilkan nomornya berdasarkan id tersebut. Secara sederhana `$buku->isbn->nomor` dapat dibaca : tampilkan nomor isbn buku berdasarkan id isbn yang ada pada tiap-tiap buku.
+![alt text](https://i.ibb.co/54Ms2vN/image.png)
+
+Selanjutnya kita buat controller baru dengan menjalankan perintah:
 ```
-public function formbook(){
-    return view('formbook');
+php artisan make:controller BukuController
+```
+Pada `BukuController` buat function baru bernama index dengan kode sebagai berikut:
+```
+public function index(){
+    	$bukus = Buku::all();
+    	return view('buku.index', ['bukus' => $bukus]);
 }
 ```
-Jika sudah, maka kita buat route baru di `web.php` dan kita panggil function `formbook` yang berada pada `BookController` untuk menampilkan view `formbook` yang sudah kita buat.
+Terakhir kita buka `web.php` lalu ubah route default kita menjadi seperti berikut:
 ```
-Route::get('/formbook', [BookController::class, 'formbook']);
+Route::get('/', [BukuController::class, 'index']);
 ```
-Selanjutnya kita buka `http://localhost:8000/formbook` maka akan tampil halaman seperti berikut :
-![alt text](https://i.ibb.co/yXyJW8S/Capture.jpg)
-
-Setelah kita membuat view dan input form untuk user, sekarang kita akan menampilkan request yang diinputkan oleh user. Pertama-tama kita buka kembali `BookController`, selanjutnya kita tambah function `showbook()` sebagai berikut :
-```
-public function showbook(Request $request){
-        $nama = $request->input('nama');
-     	$penulis = $request->input('penulis');
-        return $nama." - ".$penulis;
-}
-```
-Selanjutnya kita tambahkan route baru dengan memanggil function `showbook` yang sudah kita buat selanjutnya
-```
-Route::post('/formbook/show', [BookController::class, 'showbook']);
-```
-Kita buka kembali halaman form kita `http://localhost:8000/formbook`, selanjutnya kita coba masukkan data misalnya
-- Nama Buku : Bicara itu Ada Seninya
-- Penulis : Oh Su Hyang  
-
-Selanjutnya kita tekan tombol submit, maka akan muncul nama buku dan penulis yang sebelumnya sudah kita inputkan yaitu
-`Bicara itu Ada Seninya - Oh Su Hyang`. Jika kita perhatikan, data request yang kita inputkan pada input form tidak muncul pada url. URL yang ditampilkan tidak berubah, tetap `http://localhost:8000/formbook` inilah salah satu tujuan dari metode request dengan input form menggunakan method post yaitu mengamankan dan menyembunyikan data.
-
+Buka route kita `localhost:8000/` maka data-data buku di tabel buku yang berrelasi dengan tabel ISBN akan tampil:
+![alt text](https://i.ibb.co/nw51h3c/image.png)
+Dapat dilihat bahwa yang tampil bukan id ISBN melainkan nomor dari ISBN.
 
 ## Link
-https://laravel.com/docs/8.x/requests#main-content
+https://laravel.com/docs/8.x/eloquent
+https://laravel.com/docs/8.x/eloquent-relationships
 
 
 
