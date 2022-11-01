@@ -16,4 +16,9 @@ class Buku extends Model
     public function isbn(){
         return $this->belongsTo(Isbn::class);
     }
+
+    // menambahkan s berarti jamak (hasMany = memiliki banyak)
+    public function ulasans(){
+        return $this->hasMany(Ulasan::class);
+    }
 }

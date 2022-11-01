@@ -1,78 +1,91 @@
-# Belajar Laravel Part 15 : Eloquent Relationship - One to One
-Seringkali database kita memiliki beberapa table yang saling berrelasi. Misalnya sebuah buku memiliki isbn, ini berarti berarti tabel buku berrelasi dengan tabel isbn. Fitur eloquent dalam laravel memungkinkan kita dengan mudah mengatur hubungan atau relasi antar tabel dengan lebih mudah. Berikut adalah jenis-jenis relasi dasar:
-- One to One
-- One to Many
-- Many to Many  
+# Belajar Laravel Part 16 : Eloquent Relationship - One to Many
+Sebelumnya kita telah menerapkan relasi one to one menggunakan eloquent. Dalam kasus kita sebelumnya satu buah buku hanya dapat memiliki satu ISBN oleh sebab itu relasi yang dibuat adalah one to one. Pada materi kali ini kita akan menerapkan relasi one to many menggunakan eloquent. Dalam kasus kali ini kita membutuhkan tabel baru yaitu tabel `ulasan`. Tabel `buku` akan memiliki relasi one to many dengan tabel `ulasan`, sehingga dapat disimpulkan bahwa satu `buku` bisa memiliki banyak `ulasan`.
 
-Pada materi kali ini kita akan menerapkan relasi One to One dengan menggunakan eloquent. Pertama-tama yang harus dilakukan adalah membuat file migration untuk membuat tabel baru.
-
-## Membuat File Migration dan Tabel
-Membuat file migration untuk tabel isbn
-```
-php artisan make:migration create_isbn_table
-```
-Membuat file migration untuk tabel buku
-```
-php artisan make:migration create_buku_table
-```
-Catatan : `Urutan pembuatan file migration harus sangat diperhatikan`. Pada kasus ini file migration isbn harus dibuat terlebih dahulu karena table buku memiliki ketergantungan dengan isbn. Jika membuat file migration untuk tabel buku terlebih dahulu, maka dipastikan akan error saat menjalankan perintah migration.
-
-Selanjutnya pada masing-masing file migration tambahkan kode sebagai berikut:
-
-Pada file migration untuk tabel buku :
+## Relasi One to Many dengan Eloquent
+Sebelumnya kita perlu menambahkan satu kolom lagi pada tabel buku yaitu kolom `ulasan_id` ketikkan kode sebagai berikut:
 ```
 public function up()
-{
+    {
         Schema::create('buku', function (Blueprint $table) {
             $table->id();
 
             $table->bigInteger('isbn_id')->unsigned();
             $table->foreign('isbn_id')->references('id')->on('isbn');
 
+            $table->bigInteger('ulasan_id')->unsigned();
+            $table->foreign('ulasan_id')->references('id')->on('ulasan');
+
             $table->string('judul');
         });
-}
+    }
 ```
-Pada file migration untuk table isbn:
+Selanjutnya kita perlu membuat tabel baru yaitu tabel `ulasan`. Ketikkan perintah
 ```
-Schema::create('isbn', function (Blueprint $table) {
+php artisan make:migration create_ulasan_table
+```
+Selanjutnya akan ada file migration baru yang berhasil dibuat. Tambahkan kode sebagai berikut:
+```
+public function up()
+    {
+        Schema::create('ulasan', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-});
-```
-Selanjutnya jalankan migration dengan perintah:
-```
-php artisan migrate
-```
-catatan : jika kamu sudah memiliki table-table, maka gunakan `php artisan migrate:fresh` untuk mereset ulang tabel-tabel yang ada pada database.
 
-## Relasi One to One Dengan Eloquent
-Untuk menggunakan eloquent maka kita perlu membuat model untuk mewakili tabel-tabel yang sudah kita miliki pada database.  
-Membuat model isbn
+            $table->bigInteger('buku_id')->unsigned();
+            $table->foreign('buku_id')->references('id')->on('buku');
+            
+            $table->string('nama');
+            $table->text('ulasan');
+        });
+    }
 ```
-php artisan make:model isbn
+<hr>
+`Catatan` (Boleh diabaikan)  
+ Namun, Perlu diingat bahwasannya urutan nama migration sangat penting sebelum menjalankan migration. Misalnya pada file migration `2022_11_01_135016_create_ulasan_table` kita membuat sebuah foreign key yang reference keynya berasal dari tabel buku
+ ```
+ $table->bigInteger('buku_id')->unsigned();
+ $table->foreign('buku_id')->references('id')->on('buku');
+ ```
+Ini berarti file migrasi buku harus berada diatas file migrasi ulasan seperti berikut:
+![img alt](https://i.ibb.co/3kPfKgZ/image.png)
+
+Urutan file dapat diatur dengan mudah dengan merubah penomoran nama file misalnya jika ingin file migrasi `2022_11_01_135016_create_ulasan_table` berada diatas file migrasi `2022_10_30_170826_create_buku_table` maka ubah saja
 ```
-Membuat model buku
+2022_11_01_135016_create_ulasan_table
 ```
-php artisan make:model Buku
+menjadi
 ```
-Selanjutnya pada model isbn tambahkan kode sebagai berikut:
+2022_10_30_135016_create_ulasan_table
 ```
-class Isbn extends Model
+karena `10_30_135016` lebih kecil dari `10_30_170826`  
+<hr>
+
+
+Selanjutnya kita jalankan migration ulang
+```
+php artisan migrate:fresh
+```
+Sekarang data-data di database kita sudah fresh dan terdapat kolom baru pada tabel buku yaitu kolom ulasan.
+
+Dalam eloquent, tabel direpresentasikan oleh sebuah model. Oleh sebab itu, kita perlu membuat model baru untuk mewakilkan tabel ulasan yang sudah kita buat.
+```
+php artisan make:model Ulasan
+```
+Sekarang kita sudah punya model ulasan. Selanjutnya pada model ulasan tambahkan kode sebagai berikut:
+```
+class Ulasan extends Model
 {
     use HasFactory;
 
-    protected $table = 'isbn';
+    protected $table = 'ulasan';
     public $timestamps = false;
     protected $guarded = ['id'];
 
     public function buku(){
-        return $this->hasOne(Buku::class);
+        return $this->belongsTo(Buku::class);
     }
 }
 ```
-Perhatikan pada function `buku()`. Function ini berarti tabel isbn memiliki relasi dengan tabel buku dengan rincian satu isbn hanya memiliki satu buku (satu nomor isbn untuk satu buku).  
-Selanjutnya pada model Buku tambahkan kode sebagai berikut:
+Selanjutnya pada model buku, tambahkan kode sebagai berikut:
 ```
 class Buku extends Model
 {
@@ -85,20 +98,18 @@ class Buku extends Model
     public function isbn(){
         return $this->belongsTo(Isbn::class);
     }
+
+    public function ulasan(){
+        return $this->hasMany(Ulasan::class);
+    }
 }
 ```
-
-Perhatikan pada function `isbn()`. Function ini berarti tabel buku memiliki relasi dengan tabel isbn dengan rincian satu buku hanya dimiliki oleh satu isbn saja.
-
-Catatan : `biasanya belongsTo terdapat pada tabel yang memiliki foreign key`  
-
-## Menampilkan Data
-Untuk menampilkan data maka kita perlu membuat view terlebih dahulu. Tambahkan folder `book` di folder `resources\view`. Selanjutnya kita buat file view baru `index.blade.php`
+Terakhir tambahkan kode sebagai berikut pada view kita `index.blade.php`
 ```
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Eloquent One to One</title>
+	<title>Eloquent One to Many</title>
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 </head>
 <body>
@@ -106,12 +117,13 @@ Untuk menampilkan data maka kita perlu membuat view terlebih dahulu. Tambahkan f
 	<div class="container">
 		<div class="card">
 			<div class="card-body">
-				<h5 class="text-center">Eloquent One To One Relationship</h5>
+				<h5 class="text-center">Eloquent One To Many Relationship</h5>
 				<table class="table table-bordered table-striped">
 					<thead>
 						<tr>
 							<th>Judul</th>
 							<th>ISBN</th>
+							<th>Ulasan</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -119,6 +131,11 @@ Untuk menampilkan data maka kita perlu membuat view terlebih dahulu. Tambahkan f
 						<tr>
 							<td>{{ $buku->judul }}</td>
 							<td>{{ $buku->isbn->nomor }}</td>
+							<td>
+								@foreach($buku->ulasans as $ulasan)
+								   	-{{$ulasan->ulasan}} <small>({{$ulasan->nama}})</small> <br>
+								@endforeach
+							</td>
 						</tr>
 						@endforeach
 					</tbody>
@@ -130,28 +147,11 @@ Untuk menampilkan data maka kita perlu membuat view terlebih dahulu. Tambahkan f
 </body>
 </html>
 ```
-perhatikan pada `<td>{{ $buku->isbn->nomor }}</td>`. Disini kita ingin menampikan nomor isbn dari tiap-tiap data buku, tetapi data yang kita lihat di tabel adalah id dari isbn.Inilah peran dari eloquent relationship. Dengan foreign key id yang terdapat pada tabel-tabel buku kita bisa menampilkan nomornya berdasarkan id tersebut. Secara sederhana `$buku->isbn->nomor` dapat dibaca : tampilkan nomor isbn buku berdasarkan id isbn yang ada pada tiap-tiap buku.
+Berikut adalah tampilan tabel kita, dimana satu buku bisa memiliki banyak ulasan. Oleh sebab itu tabel `buku` memiliki relasi one to many dengan tabel `ulasan`.
+![alt text](https://i.ibb.co/Xx0bQSt/image.png)
 
-![alt text](https://i.ibb.co/54Ms2vN/image.png)
 
-Selanjutnya kita buat controller baru dengan menjalankan perintah:
-```
-php artisan make:controller BukuController
-```
-Pada `BukuController` buat function baru bernama index dengan kode sebagai berikut:
-```
-public function index(){
-    	$bukus = Buku::all();
-    	return view('buku.index', ['bukus' => $bukus]);
-}
-```
-Terakhir kita buka `web.php` lalu ubah route default kita menjadi seperti berikut:
-```
-Route::get('/', [BukuController::class, 'index']);
-```
-Buka route kita `localhost:8000/` maka data-data buku di tabel buku yang berrelasi dengan tabel ISBN akan tampil:
-![alt text](https://i.ibb.co/nw51h3c/image.png)
-Dapat dilihat bahwa yang tampil bukan id ISBN melainkan nomor dari ISBN.
+
 
 ## Link
 https://laravel.com/docs/8.x/eloquent
