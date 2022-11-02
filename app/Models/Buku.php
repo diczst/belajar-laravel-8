@@ -21,4 +21,8 @@ class Buku extends Model
     public function ulasans(){
         return $this->hasMany(Ulasan::class);
     }
+
+    public function users(){
+    	return $this->belongsToMany(User::class);
+    }
 }
