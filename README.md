@@ -1,87 +1,54 @@
-# Belajar Laravel Part 5 : Request Data
+# Belajar Laravel Part 18 : Login dan Register
 
-## Input Request
-Seringkali sistem yang kita buat akan menerima inputan atau `request` dari user. `Request` biasanya dilakukan oleh pengguna untuk melakukan operasi data tertentu seperti `menambah data`, `menghapus data`, `mengubah data` dan `melihat data`. Secara garis besar ada dua jenis cara yang dapat dilakukan oleh user untuk mengirimkan request yaitu:
-1. Mengirimkan request melalui URL
-2. Mengirimkan request melalui input form
+## Persiapan
+Laravel sudah menyediakan file migration untuk membuat tabel `users` oleh karena itu kita langsung dapat melakukan migration seperti berikut:
 
-Kita dapat menampilkan atau menerima `request` tersebut untuk melakukan operasi tertentu, baik yang dikirim melalui URL, maupun dari input form.
+php artisan migrate:fresh
 
-### Menerima Request dari URL
-Agar user dapat mengirimkan `request` melalui URL, maka kita harus menyediakannya terlebih dahulu pada route kita. Pertama-tama kita buka file `BookController` selanjutnya kita tambahkan function baru bernama `favoriteBook()` dengan kode sebagai berikut : 
+## Membuat Fitur Login dan Register
+Pertama-tama kita memerlukan library laravel UI, perlu diingat bahwa versi laravel yang digunakan pada materi ini adalah laravel versi `8.x`. Berdasarkan dokumentasi Laravel UI, versi laravel ui yang dapat digunakan pada laravel `8.x` adalah laravel ui `3.x` oleh karena itu kita jalankan perintah sebagai berikut:
 ```
-public function favoritebook($namaBuku){
-        return $namaBuku;
-}
+composer require laravel/ui "^3.x"
 ```
-Selanjutnya kita buka file `web.php` lalu kita tambahkan route baru sebagai berikut :
+ 
+Selanjutnya jalankan perintah sebagai berikut:
 ```
-Route::get('/favoritebook/{namabuku}', [BookController::class, 'favoritebook']);
+php artisan ui bootstrap --auth
 ```
-Sekarang coba akses route yang baru kita buat dengan cara membuka `localhost:8000/favoritebook/Mindset`. Jika sudah berhasil, maka akan muncul sebuah teks bertuliskan `Mindset` yang merupakan `request` yang kita kirimkan melalui URL. Jika ingin menambahkan spasi, kita bisa menggunakan `%20` seperti berikut : `localhost:8000/favoritebook/Mindset%20-%20Carol%20Dweck`, maka hasil yang akan ditampilkan adalah `Mindset - Carol Dweck`.
+Setelah menjalankan perintah diatas, laravel akan membuat sebuah controller baru beserta dengan routenya pada `web.php`. Buka `web.php` maka secara default akan ada kode sebagai berikut:
+```
+Route::get('/', function () {
+    return view('welcome');
+});
 
-### Menerima Request dari Input Form
-Selanjutnya kita akan mencoba menampilkan `request` yang dilakukan user melalui input form. Input form ini akan menggunakan method post. Cara kerja input form method post ini mirip dengan pengiriman `request` melalui URL. Namun, pada input form dengan method post, `request` yang dikirimkan oleh user tidak dikirim melalui URL, sehingga data `request` tidak akan terlihat di alamat URL untuk tujuan keamanan. Hal ini karena data-data sensitif seperti password akan sangat berbahaya apabila diinputkan melalui URL karena dapat terlihat secara langsung maupun secara tidak langsung (dari history browser).
+Auth::routes();
 
-<br>
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+```
+Ubah route pada `web.php` menjadi sebagai berikut:
+```
+// Route::get('/', function () {
+//     return view('welcome');
+// });
 
-Langkah pertama untuk menerima `request` dari input form, maka kita butuh halaman formnya terlebih dahulu. Kita buat file view baru `formbook.blade.php`, lalu kita masukkan source code sebagai berikut:
-```
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>Buku Favorit</title>
-</head>
-<body>
-	<h2>Buku Favorit</h2>
-    <form action="/formbook/show" method="post">
-		<input type = "hidden" name = "_token" value = "<?php echo csrf_token() ?>">
-      
-      	Nama Buku :
-		<input type="text" name="nama"> <br/>
-		Penulis :
-		<input type="text" name="penulis"> <br/>
-		<input type="submit" value="Simpan">
-	</form>
-</body>
-</html>
-```
-Kita akan menggunakan `BookController` agar lebih rapi, maka selanjutnya kita buka `BookController` lalu tambahkan function baru `formbook()` dan tambahkan kode sebagai berikut :
-```
-public function formbook(){
-    return view('formbook');
-}
-```
-Jika sudah, maka kita buat route baru di `web.php` dan kita panggil function `formbook` yang berada pada `BookController` untuk menampilkan view `formbook` yang sudah kita buat.
-```
-Route::get('/formbook', [BookController::class, 'formbook']);
-```
-Selanjutnya kita buka `http://localhost:8000/formbook` maka akan tampil halaman seperti berikut :
-![alt text](https://i.ibb.co/yXyJW8S/Capture.jpg)
+Auth::routes();
 
-Setelah kita membuat view dan input form untuk user, sekarang kita akan menampilkan request yang diinputkan oleh user. Pertama-tama kita buka kembali `BookController`, selanjutnya kita tambah function `showbook()` sebagai berikut :
+Route::get('/', [HomeController::class, 'index'])->name('home');
 ```
-public function showbook(Request $request){
-        $nama = $request->input('nama');
-     	$penulis = $request->input('penulis');
-        return $nama." - ".$penulis;
-}
+Selanjutnya coba buka halaman utama `localhost:8000` maka dapat dilihat bahwa tampilan web kita masih belum terintegrasi dengan CSS. Untuk memperbaikinya maka kita dapat tambahkan kode sebagai berikut pada bagian <!-- Styles --> file `app.blade.php` :
 ```
-Selanjutnya kita tambahkan route baru dengan memanggil function `showbook` yang sudah kita buat selanjutnya
-```
-Route::post('/formbook/show', [BookController::class, 'showbook']);
-```
-Kita buka kembali halaman form kita `http://localhost:8000/formbook`, selanjutnya kita coba masukkan data misalnya
-- Nama Buku : Bicara itu Ada Seninya
-- Penulis : Oh Su Hyang  
+<!-- Styles -->
+    {{-- <link href="{{ asset('css/app.css') }}" rel="stylesheet"> --}}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
 
-Selanjutnya kita tekan tombol submit, maka akan muncul nama buku dan penulis yang sebelumnya sudah kita inputkan yaitu
-`Bicara itu Ada Seninya - Oh Su Hyang`. Jika kita perhatikan, data request yang kita inputkan pada input form tidak muncul pada url. URL yang ditampilkan tidak berubah, tetap `http://localhost:8000/formbook` inilah salah satu tujuan dari metode request dengan input form menggunakan method post yaitu mengamankan dan menyembunyikan data.
+    <!-- JavaScript Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous">
+    </script> 
+```
+Sekarang tampila halaman login kita sudah terintegrasi dengan bootstrap. Coba lakukan register untuk membuat akun selanjutnya lakukan login. Jika berhasil maka pembuatan fitur login sudah berhasil dilakukan
 
 
-## Link
-https://laravel.com/docs/8.x/requests#main-content
-
-
-
-
+## Links
+https://github.com/laravel/ui
