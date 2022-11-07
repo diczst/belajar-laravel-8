@@ -1,7 +1,6 @@
 <?php
 
-use App\Http\Controllers\BookController;
-use App\Http\Controllers\HomeController;
+use App\Http\Controllers\BukuController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -17,9 +16,10 @@ use Illuminate\Support\Facades\Route;
 */
 
 // Route::get('/', function () {
-//     return view('welcome');
+//     return view('admin.buku.index');
 // });
 
 Auth::routes();
 
-Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/', [BukuController::class, 'index'])->middleware('auth');
+Route::resource('buku', BukuController::class);

@@ -1,54 +1,129 @@
-# Belajar Laravel Part 18 : Login dan Register
+# Belajar Laravel Part 19 : Sistem Informasi Perpustakaan Sederhana
 
-## Persiapan
-Laravel sudah menyediakan file migration untuk membuat tabel `users` oleh karena itu kita langsung dapat melakukan migration seperti berikut:
+Pada materi-materi sebelumnya kita telah mempelajari dasar-dasar yang diperlukan untuk membuat sebuah sistem informasi pada Laravel. Pada materi kali ini, kita akan menerapkan semua dasar-dasar yang sudah kita pelajari untuk membuat suatu sistem informasi sederhana, selain itu kita juga akan menambah atau belajar membuat beberapa fitur baru seperti fitur `upload gambar`. Pertama-tama kita perlu membuat beberapa tabel menggunakan migration.
+```
+php artisan make:migration create_kategori_table   
+```
 
+```
+public function up()
+    {
+        Schema::create('kategori', function (Blueprint $table) {
+            $table->id();
+            $table->string('nama');
+        });
+    }
+```
+```
+php artisan make:migration create_buku_table   
+```
+```
+public function up()
+    {
+        Schema::create('buku', function (Blueprint $table) {
+            $table->id();
+
+            $table->string('judul');
+
+            $table->bigInteger('kategori_id')->unsigned();
+            $table->foreign('kategori_id')->references('id')->on('kategori');
+
+            $table->integer('jumlah');
+            $table->string('gambar')->nullable();
+        });
+    }
+```
+
+```
 php artisan migrate:fresh
+```
 
-## Membuat Fitur Login dan Register
-Pertama-tama kita memerlukan library laravel UI, perlu diingat bahwa versi laravel yang digunakan pada materi ini adalah laravel versi `8.x`. Berdasarkan dokumentasi Laravel UI, versi laravel ui yang dapat digunakan pada laravel `8.x` adalah laravel ui `3.x` oleh karena itu kita jalankan perintah sebagai berikut:
-```
-composer require laravel/ui "^3.x"
-```
- 
-Selanjutnya jalankan perintah sebagai berikut:
-```
-php artisan ui bootstrap --auth
-```
-Setelah menjalankan perintah diatas, laravel akan membuat sebuah controller baru beserta dengan routenya pada `web.php`. Buka `web.php` maka secara default akan ada kode sebagai berikut:
-```
-Route::get('/', function () {
-    return view('welcome');
-});
+## Integrasi Template SB Admin 2
+Silahkan merujuk pada 
+- https://github.com/dzuerst/belajar-laravel8/tree/integration-sbadmin2-template
+- https://github.com/dzuerst/belajar-laravel8/tree/06-blade-templates
 
-Auth::routes();
+untuk mereview kembali cara mengintegrasikan template sb admin 2 pada laravel dengan menggunakan blade template.
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 ```
-Ubah route pada `web.php` menjadi sebagai berikut:
+php artisan make:controller BukuController --resource
 ```
-// Route::get('/', function () {
-//     return view('welcome');
-// });
 
-Auth::routes();
-
-Route::get('/', [HomeController::class, 'index'])->name('home');
 ```
-Selanjutnya coba buka halaman utama `localhost:8000` maka dapat dilihat bahwa tampilan web kita masih belum terintegrasi dengan CSS. Untuk memperbaikinya maka kita dapat tambahkan kode sebagai berikut pada bagian <!-- Styles --> file `app.blade.php` :
+php artisan make:model Buku
 ```
-<!-- Styles -->
-    {{-- <link href="{{ asset('css/app.css') }}" rel="stylesheet"> --}}
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
 
-    <!-- JavaScript Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous">
-    </script> 
+Menjalankan seeder
 ```
-Sekarang tampila halaman login kita sudah terintegrasi dengan bootstrap. Coba lakukan register untuk membuat akun selanjutnya lakukan login. Jika berhasil maka pembuatan fitur login sudah berhasil dilakukan
+php artisan db:seed
+```
+
+```
+php artisan make:model Kategori
+```
+
+di AppServiceProvider untuk fix bug tampilan pagination bootstrap
+```
+public function boot()
+    {
+        Paginator::useBootstrap();
+    }
+```
+
+Mengganti default route setelah login berhasil / gagal. Buka class `RouteServiceProvider`
+ubah
+
+```
+public const HOME = '/home';
+```
+menjadi
+```
+public const HOME = '/';
+```
 
 
+## Fitur Upload Gambar
+Buka `.env` tambahkan kode sebagai berikut
+```
+FILESYSTEM_DRIVER=public
+```
+
+jangan lupa menambahkan 
+```
+enctype="multipart/form-data"
+```
+pada form kita
+
+
+Untuk menampilkan gambar yang sudah diupload saat ingin mengubah data
+```
+php artisan storage:link
+```
+
+## Mempertahankan input saat input tidak valid
+```
+value="{{ old('jumlah') }}
+```
+Pada function `store` pada bagian controller tambahkan method `withInput()`:
+```
+return redirect('/')->withInput();
+```
+
+## Menampilkan Alert dengan SweetAlert
+
+```
+composer require realrashid/sweet-alert 
+```
+
+Publish untuk generate asset yang dibutuhkan untuk kustomisasi alert
+```
+php artisan sweetalert:publish
+```
 ## Links
-https://github.com/laravel/ui
+- https://datatables.net/
+- https://getbootstrap.com/docs/4.6/getting-started/introduction/
+- https://realrashid.github.io/sweet-alert/install
+- https://alfinchandra4.medium.com/catatan-laravel-sweetalert-2-c286678e23d0
+
+
+
